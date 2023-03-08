@@ -87,7 +87,7 @@ public class AccountEndpoint {
         return new ResponseEntity<>(accountHandler.withdraw(beneficiaryId, amount), HttpStatus.OK);
     }
 
-    @PutMapping(path = "/deposit/", produces = "text/plain")
+    @PutMapping(path = "/deposit", produces = "text/plain")
     public ResponseEntity<String> deposit(@RequestParam("beneficiaryId") String beneficiaryId, @RequestParam("externalTransactionId") String externalTransactionId){
        // return new ResponseEntity<>(accountHandler.deposit(beneficiaryId, externalTransactionId), HttpStatus.OK);
         return new ResponseEntity<>(" Awaiting Implementation ", HttpStatus.OK);
