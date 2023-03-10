@@ -1,13 +1,11 @@
 package com.pentspace.usermgtservice.handlers.impl;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.pentspace.usermgtservice.clients.EmailServiceClient;
+import com.pentspace.usermgtservice.clients.PaystackServiceClient;
 import com.pentspace.usermgtservice.clients.TransactionServiceClient;
-import com.pentspace.usermgtservice.dto.AccountDTO;
-import com.pentspace.usermgtservice.dto.RegistrationNotificationDTO;
-import com.pentspace.usermgtservice.dto.Transaction;
-import com.pentspace.usermgtservice.entities.Account;
-import com.pentspace.usermgtservice.entities.Address;
-import com.pentspace.usermgtservice.entities.Service;
+import com.pentspace.usermgtservice.dto.*;
+import com.pentspace.usermgtservice.entities.*;
 import com.pentspace.usermgtservice.entities.enums.AccountStatus;
 import com.pentspace.usermgtservice.entities.enums.TransactionStatus;
 import com.pentspace.usermgtservice.entities.enums.TransactionType;
@@ -15,6 +13,7 @@ import com.pentspace.usermgtservice.handlers.AccountHandler;
 import com.pentspace.usermgtservice.handlers.BaseHandler;
 import com.pentspace.usermgtservice.handlers.HashManagerHandler;
 import com.pentspace.usermgtservice.services.AccountService;
+import com.pentspace.usermgtservice.services.BankService;
 import com.pentspace.usermgtservice.services.FileUploadService;
 import com.pentspace.usermgtservice.services.ServiceService;
 import lombok.extern.slf4j.Slf4j;
@@ -40,6 +39,10 @@ public class AccountHandlerImpl extends BaseHandler implements AccountHandler {
     private HashManagerHandler hashManagerHandler;
     @Autowired
     private TransactionServiceClient transactionServiceClient;
+    @Autowired
+    private PaystackServiceClient paystackServiceClient;
+    @Autowired
+    private BankService bankService;
     @Override
     public Account createAccount(AccountDTO accountDTO) {
         Account account = prepareAccountEntity(accountDTO);
@@ -55,11 +58,7 @@ public class AccountHandlerImpl extends BaseHandler implements AccountHandler {
 
     @Override
     public Account getById(String id) {
-        Account account =  accountService.getById(id);
-        if(Objects.nonNull(account.getProfilePictureUrl())){
-            account.setProfileImageBase64(fileUploadService.readAndConvertImageToBase64Read(account.getId()));
-        }
-        return account;
+        return accountService.getById(id);
     }
 
     @Override
@@ -116,8 +115,12 @@ public class AccountHandlerImpl extends BaseHandler implements AccountHandler {
     public String debitBalance(String id, BigDecimal amount) {
         try {
             Account account = getById(id);
+            log.info("Debit balance request:: Account Id [{}],  initial balance [{}], amount [{}]", id, account.getBalance(), amount);
             account.setBalance(account.getBalance().subtract(amount));
+            Transaction transaction = prepareDebitTransaction(amount, id);
+            transactionServiceClient.create(transaction);
             accountService.updateAccount(id, account);
+            log.info(" Current balance [{}]", account.getBalance());
             return "Successful";
         }catch (Exception exception){
             log.error(" An error occurred [{}]", exception.getMessage(), exception);
@@ -129,8 +132,12 @@ public class AccountHandlerImpl extends BaseHandler implements AccountHandler {
     public String creditBalance(String id, BigDecimal amount) {
         try {
             Account account = getById(id);
+            log.info("Credit balance request:: Account Id [{}],  initial balance [{}], amount [{}]", id, account.getBalance(), amount);
             account.setBalance(account.getBalance().add(amount));
+            Transaction transaction = prepareCreditTransaction(amount, id);
+            transactionServiceClient.create(transaction);
             accountService.updateAccount(id, account);
+            log.info(" Current balance [{}]", account.getBalance());
             return "Successful";
         }catch (Exception exception){
             log.error(" An error occurred [{}]", exception.getMessage(), exception);
@@ -139,65 +146,121 @@ public class AccountHandlerImpl extends BaseHandler implements AccountHandler {
     }
 
     @Override
-    public String deposit(String beneficiaryId, String externalTransactionId) {
+    public String payment(String beneficiaryId, String externalTransactionId) {
        try {
-       // Todo, we need to call third-party api [Paystack] for now to confirm the transaction status, if approved then we add the amount to beneficiary's current balance
-           return null;
+           // Get transaction status from vendor
+           // Save it in transaction table
+           // If status is successful from vendor ( Meaning Pentspace Account has been credited ) then credit the beneficiary
+
+           //Lets check if we have already save this transaction
+           Transaction savedTransaction = transactionServiceClient.getBySourceId(externalTransactionId);
+           if(Objects.nonNull(savedTransaction.getId())){
+               log.info(" Transaction [{}] already exist with status [{}] ", externalTransactionId, savedTransaction.getStatus());
+               return String.format("Transaction %s already exist with status %s", externalTransactionId, savedTransaction.getStatus());
+           }
+           log.info(" Fetching payment status from vendor ... ");
+           PaystackPaymentStatusDTO paystackPaymentStatusDTO = paystackServiceClient.verifyPayment(externalTransactionId);
+           if(paystackPaymentStatusDTO.getStatus().equalsIgnoreCase("true") && Objects.nonNull(paystackPaymentStatusDTO.getData())){
+               String paystackResponse = new ObjectMapper().writeValueAsString(paystackPaymentStatusDTO);
+               Transaction transaction = preparePaymentTransaction(paystackPaymentStatusDTO.getData().get("amount"), beneficiaryId, paystackResponse, externalTransactionId);
+               transaction = transactionServiceClient.create(transaction);
+               if(Objects.nonNull(transaction.getId())){
+                   if(paystackPaymentStatusDTO.getData().get("status").equalsIgnoreCase("success")){
+                       Account account = getById(beneficiaryId);
+                       account.setBalance(account.getBalance().add(new BigDecimal(paystackPaymentStatusDTO.getData().get("amount"))));
+                       accountService.updateAccount(beneficiaryId, account);
+                       return "Successful";
+                   }else{
+                       return paystackPaymentStatusDTO.getData().get("status");
+                   }
+               }else{
+                   return "An error occurred";
+               }
+           }else{
+               log.info(" Payment status response from vendor [{}] ", paystackPaymentStatusDTO);
+               return "Payment Status Unknown please contact service provider";
+           }
        }catch (Exception exception){
-           return null;
+          log.error(" An error occurred [{}]", exception.getMessage(), exception);
+          return " An error occurred ";
        }
     }
 
     @Override
-    public String withdraw(String beneficiaryId, String amount) {
+    public String withdraw(WithdrawDTO withdrawDTO) {
         // This is where Pentspace do payout i.e transfer money from personal account to beneficiary real bank account
 
        try {
-          Account account = getById(beneficiaryId);
-          if(!isBalanceEnough(account.getBalance(), new BigDecimal(amount))){
+          Account account = getById(withdrawDTO.getBeneficiaryAccountId());
+          log.info(" Initiating Withdraw request for beneficiary [{}] ", withdrawDTO.getBeneficiaryAccountId());
+          if(!isBalanceEnough(account.getBalance(), new BigDecimal(withdrawDTO.getAmount()))){
               log.info( "Balance is lesser than withdraw amount");
               return "Failed";
           }
-          Transaction transaction = prepareWithdrawRequest(amount, beneficiaryId);
+          validatePin(account.getPin(), withdrawDTO.getTransactionPin());
+          Transaction transaction = prepareWithdrawRequest(withdrawDTO.getAmount(), withdrawDTO.getBeneficiaryAccountId());
           transaction = transactionServiceClient.create(transaction);
           if(Objects.isNull(transaction.getId())){
               return "Failed";
           }
-          account.setBalance(account.getBalance().subtract(new BigDecimal(amount)));
-          account = accountService.updateAccount(beneficiaryId, account);
-          emailServiceClient.sendEmail(account.getEmail(), transaction.getOtp(), "WITHDRAWAL OTP");
-           return "Successful";
+          log.info(" Initiating Balance [{}] ", account.getBalance());
+          account.setBalance(account.getBalance().subtract(new BigDecimal(withdrawDTO.getAmount())));
+          account = accountService.updateAccount(withdrawDTO.getBeneficiaryAccountId(), account);
+          log.info(" Current Balance [{}] ", account.getBalance());
+          emailServiceClient.sendEmail(account.getEmail(), transaction.getOtp(), " WITHDRAWAL OTP ");
+          return "Successful";
        }catch (Exception exception){
            return "Failed";
        }
     }
 
     @Override
-    public String transfer(String sourceId, String beneficiaryId, String amount ) {
+    public String transfer(TransferDTO transferDTO) {
         //  P2P Fund transfer between pairs on the system (Pentspace)
         try {
-            Account sourceAccount = getById(sourceId);
-            Account beneficiaryAccount = getById(beneficiaryId);
-            if(!isBalanceEnough(sourceAccount.getBalance(), new BigDecimal(amount))){
+            Account sourceAccount = getById(transferDTO.getSourceAccountId());
+            log.info(" Initiating Transfer request from source [{}] to beneficiary [{}] ",transferDTO.getSourceAccountId(), transferDTO.getBeneficiaryAccountId());
+            Account beneficiaryAccount = getById(transferDTO.getBeneficiaryAccountId());
+            if(!isBalanceEnough(sourceAccount.getBalance(), new BigDecimal(transferDTO.getAmount()))){
                 return "Balance is lesser than transfer amount";
             }
-            sourceAccount.setBalance(sourceAccount.getBalance().subtract(new BigDecimal(amount)));
-            beneficiaryAccount.setBalance(beneficiaryAccount.getBalance().add(new BigDecimal(amount)));
-            accountService.updateAccounts(Arrays.asList(sourceAccount, beneficiaryAccount));
-            Transaction transaction =  prepareTransferTransaction(amount, sourceId, beneficiaryId);
+            validatePin(sourceAccount.getPin(), transferDTO.getTransactionPin());
+            Transaction transaction =  prepareTransferTransaction(transferDTO.getAmount(), transferDTO.getSourceAccountId(), transferDTO.getBeneficiaryAccountId());
             transaction = transactionServiceClient.create(transaction);
             if (Objects.isNull(transaction.getId())) {
                 return "Failed";
             }
-            emailServiceClient.sendEmail(sourceAccount.getEmail(), transaction.getOtp(), "TRANSFER OTP");
+            log.info(" Initiating Source Balance [{}] ", sourceAccount.getBalance());
+            log.info(" Initiating Beneficiary Balance [{}] ", beneficiaryAccount.getBalance());
+            sourceAccount.setBalance(sourceAccount.getBalance().subtract(new BigDecimal(transferDTO.getAmount())));
+            beneficiaryAccount.setBalance(beneficiaryAccount.getBalance().add(new BigDecimal(transferDTO.getAmount())));
+            accountService.updateAccounts(Arrays.asList(sourceAccount, beneficiaryAccount));
+            log.info(" Current Source Balance [{}] ", sourceAccount.getBalance());
+            log.info(" Current Beneficiary Balance [{}] ", beneficiaryAccount.getBalance());
+            emailServiceClient.sendEmail(sourceAccount.getEmail(), transaction.getOtp(), " TRANSFER OTP ");
             return "Successful";
-        }catch (Exception exception){
+        }catch (RuntimeException exception){
             log.error(" An error occurred [{}]", exception.getMessage(), exception);
             return "Failed";
         }
     }
 
+    @Override
+    public Account enquiry(String msisdn) {
+        return accountService.getByMsisdn(msisdn);
+    }
+
     private Account prepareAccountEntity(AccountDTO accountDTO){
+        BankDetail bankDetail = null;
+        if(Objects.nonNull(accountDTO.getBankDetail())){
+            bankDetail = BankDetail.build(
+                    accountDTO.getBankDetail().getAccountNumber(),
+                    accountDTO.getBankDetail().getCbnBankCode(),
+                    accountDTO.getBankDetail().getBankCode(),
+                    accountDTO.getBankDetail().getAccountNumber(),
+                    accountDTO.getBankDetail().getBankName()
+            );
+        }
 
         Address address = Address.build(
                 accountDTO.getAddress().getLine1(),
@@ -205,6 +268,7 @@ public class AccountHandlerImpl extends BaseHandler implements AccountHandler {
                 accountDTO.getAddress().getState(),
                 accountDTO.getAddress().getCountry()
         );
+
         String otp = generateOTP();
         Account account = Account.build(
                 accountDTO.getName(),
@@ -218,7 +282,7 @@ public class AccountHandlerImpl extends BaseHandler implements AccountHandler {
                 otp,
                 AccountStatus.INACTIVE,
                 accountDTO.getAccountType(),
-                null,
+                bankDetail,
                 null,
                 address,
                 BigDecimal.ZERO
@@ -251,6 +315,41 @@ public class AccountHandlerImpl extends BaseHandler implements AccountHandler {
         transaction.setStatus(TransactionStatus.SCHEDULED);
         transaction.setSourceAccount(sourceId);
         return transaction;
+    }
+
+    private Transaction preparePaymentTransaction(String amount, String beneficiaryId, String metaData, String externalTransactionId){
+        Transaction transaction = new Transaction();
+        transaction.setTransactionType(TransactionType.PAYMENT);
+        transaction.setAmount(new BigDecimal(amount));
+        transaction.setDestinationAccount(beneficiaryId);
+        transaction.setStatus(TransactionStatus.COMPLETED);
+        transaction.setSourceAccount(externalTransactionId);
+        transaction.setMetaData(metaData);
+        return transaction;
+    }
+
+    private Transaction prepareDebitTransaction(BigDecimal amount, String beneficiaryId){
+        Transaction transaction = new Transaction();
+        transaction.setTransactionType(TransactionType.DEBIT);
+        transaction.setAmount(amount);
+        transaction.setDestinationAccount(beneficiaryId);
+        transaction.setStatus(TransactionStatus.COMPLETED);
+        return transaction;
+    }
+
+    private Transaction prepareCreditTransaction(BigDecimal amount, String beneficiaryId){
+        Transaction transaction = new Transaction();
+        transaction.setTransactionType(TransactionType.CREDIT);
+        transaction.setAmount(amount);
+        transaction.setDestinationAccount(beneficiaryId);
+        transaction.setStatus(TransactionStatus.COMPLETED);
+        return transaction;
+    }
+
+    public void validatePin(String accountPin, String transactionPin){
+        if(!hashManagerHandler.validateData(transactionPin, accountPin)){
+            throw new RuntimeException("Invalid Pin");
+        }
     }
 
 }

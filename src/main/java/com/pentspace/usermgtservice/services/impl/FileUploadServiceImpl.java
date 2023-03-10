@@ -3,6 +3,7 @@ package com.pentspace.usermgtservice.services.impl;
 import com.pentspace.usermgtservice.services.FileUploadService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.catalina.WebResource;
+import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.http.HttpHeaders;
@@ -34,7 +35,7 @@ public class FileUploadServiceImpl implements FileUploadService {
         try {
             PutObjectRequest putObjectRequest = PutObjectRequest.builder()
                     .bucket(bucketName)
-                    .key(entityId)
+                    .key(entityId + "." + FilenameUtils.getExtension(file.getOriginalFilename()))
                     .build();
 
             S3Client s3Client = getS3Client();
@@ -43,7 +44,7 @@ public class FileUploadServiceImpl implements FileUploadService {
             String url = s3Client.utilities().getUrl(getUrlRequest).toString();
             log.info(" Profile picture URL [{}]", url);
             file.getInputStream().close();
-            return url;
+            return url + "." + FilenameUtils.getExtension(file.getOriginalFilename()) ;
             //    Files.copy(file.getInputStream(),path.resolve(file.getOriginalFilename()));
         } catch (IOException e) {
             throw new RuntimeException(e);
@@ -62,40 +63,6 @@ public class FileUploadServiceImpl implements FileUploadService {
         }
     }
 
-//    public ResponseEntity<InputStreamResource> getCardImageAsStream(String url, boolean isDownload) {
-//        HttpHeaders httpHeaders = new HttpHeaders();
-//        ClientResponse clientResponse = streamDocument(url, httpHeaders, isDownload);
-//        InputStreamResource inputStreamResource = new InputStreamResource(clientResponse.getEntityInputStream());
-//        try{
-//            MultivaluedMap<String, String> responseHeaders = clientResponse.getHeaders();
-//            LOGGER.debug("responseHeaders: [{}] ", responseHeaders);
-//        } catch (Exception ex) {
-//            LOGGER.warn(ex.getMessage(), ex);
-//            try{inputStreamResource.getInputStream().close();}
-//            catch (Exception innerEx) {
-//                LOGGER.warn(innerEx.getMessage(), innerEx);
-//            }
-//            throw ex;
-//        }
-//        return new ResponseEntity(inputStreamResource, httpHeaders, HttpStatus.OK);
-//    }
-
-//    public ClientResponse streamDocument(String url, HttpHeaders httpHeaders, boolean isDownload) {
-//        WebResource.Builder builder = client.resource(url).getRequestBuilder();
-//
-//        builder = setUpTrackignHeaders(builder);
-//
-//        ClientResponse response = builder.get(ClientResponse.class);
-//        httpHeaders.add(HttpHeaders.CONTENT_LENGTH, response.getHeaders().getFirst(HttpHeaders.CONTENT_LENGTH));
-//        httpHeaders.add(HttpHeaders.CONTENT_TYPE, response.getHeaders().getFirst(HttpHeaders.CONTENT_TYPE));
-//
-//        // only add content disposition headers when we want browser to download file to local File Storage
-//        // e.g. pass through the filename received from private document service
-//        if(isDownload) {
-//            httpHeaders.add(HttpHeaders.CONTENT_DISPOSITION, response.getHeaders().getFirst(HttpHeaders.CONTENT_DISPOSITION));
-//        }
-//        return response;
-//    }
     S3Client getS3Client(){
         ProfileCredentialsProvider profileCredentialsProvider = ProfileCredentialsProvider.create();
         S3Client s3Client = S3Client.builder()

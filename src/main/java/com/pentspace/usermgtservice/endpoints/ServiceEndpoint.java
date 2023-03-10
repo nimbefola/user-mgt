@@ -1,8 +1,6 @@
 package com.pentspace.usermgtservice.endpoints;
 
-import com.pentspace.usermgtservice.dto.AccountDTO;
 import com.pentspace.usermgtservice.dto.ServiceDTO;
-import com.pentspace.usermgtservice.entities.Account;
 import com.pentspace.usermgtservice.entities.Service;
 import com.pentspace.usermgtservice.services.ServiceService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,6 +13,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping(path = "service")
+@CrossOrigin(origins = "*")
 public class ServiceEndpoint {
     @Autowired
     private ServiceService serviceService;

@@ -1,9 +1,7 @@
 package com.pentspace.usermgtservice.endpoints;
 
-import com.pentspace.usermgtservice.dto.AccountDTO;
-import com.pentspace.usermgtservice.dto.AccountServiceLinkDTO;
-import com.pentspace.usermgtservice.dto.LoginDTO;
-import com.pentspace.usermgtservice.dto.RegistrationCompletionDTO;
+import com.pentspace.usermgtservice.clients.PaystackServiceClient;
+import com.pentspace.usermgtservice.dto.*;
 import com.pentspace.usermgtservice.entities.Account;
 import com.pentspace.usermgtservice.entities.enums.AccountStatus;
 import com.pentspace.usermgtservice.handlers.AccountHandler;
@@ -21,11 +19,12 @@ import java.util.List;
 
 @RestController
 @RequestMapping(path = "/account")
-@Slf4j
 @CrossOrigin(origins = "*")
 public class AccountEndpoint {
     @Autowired
     private AccountHandler accountHandler;
+    @Autowired
+    private PaystackServiceClient paystackServiceClient;
 
     @PostMapping( produces = "application/json", consumes = "application/json")
     public ResponseEntity<Account> create(@RequestBody @Valid AccountDTO request) {
@@ -77,20 +76,29 @@ public class AccountEndpoint {
         return new ResponseEntity<>(accountHandler.creditBalance(id,new BigDecimal(amount)), HttpStatus.OK);
     }
 
-    @PutMapping(path = "/transfer", produces = "text/plain")
-    public ResponseEntity<String> transfer(@RequestParam("sourceId") String sourceId, @RequestParam("beneficiaryId") String beneficiaryId, @RequestParam("amount") String amount){
-        return new ResponseEntity<>(accountHandler.transfer(sourceId, beneficiaryId, amount), HttpStatus.OK);
+    @GetMapping(path = "enquiry/{msisdn}", produces = "application/json")
+    public ResponseEntity<Account> getAccountByMsisdn(@PathVariable("msisdn") String msisdn){
+        return new ResponseEntity<>(accountHandler.enquiry(msisdn), HttpStatus.OK);
     }
 
-    @PutMapping(path = "/withdraw", produces = "text/plain")
-    public ResponseEntity<String> withdraw(@RequestParam("beneficiaryId") String beneficiaryId, @RequestParam("amount") String amount){
-        return new ResponseEntity<>(accountHandler.withdraw(beneficiaryId, amount), HttpStatus.OK);
+    @PostMapping(path = "/transfer", consumes = "application/json", produces = "application/json")
+    public ResponseEntity<String> transfer(@RequestBody TransferDTO transferDTO){
+        return new ResponseEntity<>(accountHandler.transfer(transferDTO), HttpStatus.OK);
     }
 
-    @PutMapping(path = "/deposit", produces = "text/plain")
-    public ResponseEntity<String> deposit(@RequestParam("beneficiaryId") String beneficiaryId, @RequestParam("externalTransactionId") String externalTransactionId){
-       // return new ResponseEntity<>(accountHandler.deposit(beneficiaryId, externalTransactionId), HttpStatus.OK);
-        return new ResponseEntity<>(" Awaiting Implementation ", HttpStatus.OK);
+    @PostMapping(path = "/withdraw", consumes = "application/json", produces = "application/json")
+    public ResponseEntity<String> withdraw(@RequestBody WithdrawDTO withdrawDTO){
+        return new ResponseEntity<>(accountHandler.withdraw(withdrawDTO), HttpStatus.OK);
+    }
+
+    @PutMapping(path = "/payment/{beneficiaryId}/{externalTransactionId}", produces = "application/json")
+    public ResponseEntity<String> payment(@PathVariable("beneficiaryId") String beneficiaryId, @PathVariable("externalTransactionId") String externalTransactionId){
+        return new ResponseEntity<>(accountHandler.payment(beneficiaryId, externalTransactionId), HttpStatus.OK);
+    }
+
+    @GetMapping(path = "/deposit/status/check/{externalTransactionId}", produces = "application/json")
+    public ResponseEntity<PaystackPaymentStatusDTO> getDepositStatus(@PathVariable("externalTransactionId") String externalTransactionId){
+        return new ResponseEntity<>(paystackServiceClient.verifyPayment(externalTransactionId), HttpStatus.OK);
     }
 
 }

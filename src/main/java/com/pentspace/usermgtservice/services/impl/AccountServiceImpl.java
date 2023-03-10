@@ -22,10 +22,10 @@ public class AccountServiceImpl implements AccountService {
         return accountRepository.save(account);
     }
 
-    @Override
-    public Account getByUsernameAndPassword(String username, String password) {
-        return accountRepository.findByUsernameAndPassword(username, password).orElseThrow(()->new NoSuchElementException("Invalid Credential, please enter a valid username and password"));
-    }
+//    @Override
+//    public Account getByUsernameAndPassword(String username, String password) {
+//        return accountRepository.findByUsernameAndPassword(username, password).orElseThrow(()->new NoSuchElementException("Invalid Credential, please enter a valid username and password"));
+//    }
 
     @Override
     public Account getByUsername(String username) {
@@ -74,6 +74,11 @@ public class AccountServiceImpl implements AccountService {
     @Override
     public List<Account> updateAccounts(List<Account> accounts) {
         return accountRepository.saveAll(accounts);
+    }
+
+    @Override
+    public Account getByMsisdn(String msisdn) {
+        return accountRepository.findByMsisdn(msisdn).orElseThrow(()->new NoSuchElementException("Account not found"));
     }
 
 }

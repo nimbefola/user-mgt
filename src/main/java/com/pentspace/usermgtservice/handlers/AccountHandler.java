@@ -2,6 +2,8 @@ package com.pentspace.usermgtservice.handlers;
 
 import com.pentspace.usermgtservice.dto.AccountDTO;
 import com.pentspace.usermgtservice.dto.RegistrationCompletionDTO;
+import com.pentspace.usermgtservice.dto.TransferDTO;
+import com.pentspace.usermgtservice.dto.WithdrawDTO;
 import com.pentspace.usermgtservice.entities.Account;
 import com.pentspace.usermgtservice.entities.enums.AccountStatus;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -23,7 +25,8 @@ public interface AccountHandler {
     Account linkAccountWithService(String accountId, String serviceId);
     String debitBalance(String id, BigDecimal amount);
     String creditBalance(String id, BigDecimal amount);
-    String deposit(String beneficiaryId, String externalTransactionId);
-    String withdraw(String beneficiaryId, String amount);
-    String transfer(String sourceId, String beneficiaryId, String amount);
+    String payment(String beneficiaryId, String externalTransactionId);
+    String withdraw(WithdrawDTO withdrawDTO);
+    String transfer(TransferDTO transferDTO);
+    Account enquiry(String msisdn);
 }

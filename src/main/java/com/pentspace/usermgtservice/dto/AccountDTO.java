@@ -1,10 +1,12 @@
 package com.pentspace.usermgtservice.dto;
 
 import com.pentspace.usermgtservice.entities.Address;
+import com.pentspace.usermgtservice.entities.BankDetail;
 import com.pentspace.usermgtservice.entities.Service;
 import com.pentspace.usermgtservice.entities.enums.AccountType;
 import lombok.Data;
 
+import javax.validation.Valid;
 import javax.validation.constraints.Email;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
@@ -31,5 +33,7 @@ public class AccountDTO {
     private Service service;
     @NotNull
     private Address address;
+    @Valid
+    private BankDetail bankDetail;
     private BigDecimal balance;
 }

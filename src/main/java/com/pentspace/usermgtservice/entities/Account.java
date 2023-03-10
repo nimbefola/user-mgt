@@ -34,8 +34,8 @@ public class Account extends Base{
     private AccountStatus status;
     @Enumerated(EnumType.STRING)
     private AccountType accountType;
-    @Transient
-    private String profileImageBase64;
+    @OneToOne( cascade = CascadeType.ALL)
+    private BankDetail bankDetail;
     @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(name = "account_service",
             joinColumns = @JoinColumn(name = "account_id", referencedColumnName = "id"),
@@ -157,11 +157,11 @@ public class Account extends Base{
         this.balance = balance;
     }
 
-    public String getProfileImageBase64() {
-        return profileImageBase64;
+    public BankDetail getBankDetail() {
+        return bankDetail;
     }
 
-    public void setProfileImageBase64(String profileImageBase64) {
-        this.profileImageBase64 = profileImageBase64;
+    public void setBankDetail(BankDetail bankDetail) {
+        this.bankDetail = bankDetail;
     }
 }
