@@ -18,8 +18,6 @@ import com.pentspace.accountmgtservice.services.AccountService;
 import com.pentspace.accountmgtservice.services.BankService;
 import com.pentspace.accountmgtservice.services.FileUploadService;
 import com.pentspace.accountmgtservice.services.ServiceService;
-import com.pentspace.usermgtservice.dto.*;
-import com.pentspace.usermgtservice.entities.*;
 import com.pentspace.accountmgtservice.entities.enums.TransactionType;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;

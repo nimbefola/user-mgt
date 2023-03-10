@@ -1,11 +1,10 @@
 package com.pentspace.accountmgtservice.endpoints;
 
+import com.pentspace.accountmgtservice.clients.PaystackServiceClient;
 import com.pentspace.accountmgtservice.dto.*;
 import com.pentspace.accountmgtservice.entities.Account;
 import com.pentspace.accountmgtservice.entities.enums.AccountStatus;
 import com.pentspace.accountmgtservice.handlers.AccountHandler;
-import com.pentspace.accountmgtservice.clients.PaystackServiceClient;
-import com.pentspace.usermgtservice.dto.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
