@@ -9,9 +9,9 @@
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
 	<groupId>com.pentspace</groupId>
-	<artifactId>user-mgt-service</artifactId>
+	<artifactId>account-mgt-service</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
-	<name>user-mgt-service</name>
+	<name>account-mgt-service</name>
 	<description>User account service</description>
 	<properties>
 		<java.version>1.8</java.version>
