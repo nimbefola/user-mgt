@@ -22,11 +22,6 @@ public class AccountServiceImpl implements AccountService {
         return accountRepository.save(account);
     }
 
-//    @Override
-//    public Account getByUsernameAndPassword(String username, String password) {
-//        return accountRepository.findByUsernameAndPassword(username, password).orElseThrow(()->new NoSuchElementException("Invalid Credential, please enter a valid username and password"));
-//    }
-
     @Override
     public Account getByUsername(String username) {
         return accountRepository.findByUsername(username).orElseThrow(()->new NoSuchElementException("Account not found"));

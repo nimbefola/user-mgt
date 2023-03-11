@@ -10,6 +10,7 @@ import com.pentspace.accountmgtservice.entities.Address;
 import com.pentspace.accountmgtservice.entities.BankDetail;
 import com.pentspace.accountmgtservice.entities.Service;
 import com.pentspace.accountmgtservice.entities.enums.AccountStatus;
+import com.pentspace.accountmgtservice.entities.enums.TransactionSource;
 import com.pentspace.accountmgtservice.entities.enums.TransactionStatus;
 import com.pentspace.accountmgtservice.handlers.AccountHandler;
 import com.pentspace.accountmgtservice.handlers.BaseHandler;
@@ -73,16 +74,17 @@ public class AccountHandlerImpl extends BaseHandler implements AccountHandler {
         return account;
     }
 
-    @Override
-    public Account activate(String id, String OTP) {
-        Account account = getById(id);
-        if(!account.getActivationOtp().equalsIgnoreCase(OTP)){
-            log.error(" Invalid OTP [{}]", OTP);
-            throw new RuntimeException("Invalid OTP");
-        }
-        account.setStatus(AccountStatus.ACTIVE);
-        return accountService.updateAccount(id, account);
-    }
+    // email service has exceeded will bring this up once settled
+//    @Override
+//    public Account activate(String id, String OTP) {
+//        Account account = getById(id);
+//        if(!account.getActivationOtp().equalsIgnoreCase(OTP)){
+//            log.error(" Invalid OTP [{}]", OTP);
+//            throw new RuntimeException("Invalid OTP");
+//        }
+//        account.setStatus(AccountStatus.ACTIVE);
+//        return accountService.updateAccount(id, account);
+//    }
 
     @Override
     public Account updateAccountStatus(String id, AccountStatus status) {
@@ -112,40 +114,6 @@ public class AccountHandlerImpl extends BaseHandler implements AccountHandler {
         Service service = serviceService.getByID(serviceId);
         account.getServices().add(service);
         return accountService.updateAccount(accountId, account);
-    }
-
-    @Override
-    public String debitBalance(String id, BigDecimal amount) {
-        try {
-            Account account = getById(id);
-            log.info("Debit balance request:: Account Id [{}],  initial balance [{}], amount [{}]", id, account.getBalance(), amount);
-            account.setBalance(account.getBalance().subtract(amount));
-            Transaction transaction = prepareDebitTransaction(amount, id);
-            transactionServiceClient.create(transaction);
-            accountService.updateAccount(id, account);
-            log.info(" Current balance [{}]", account.getBalance());
-            return "Successful";
-        }catch (Exception exception){
-            log.error(" An error occurred [{}]", exception.getMessage(), exception);
-            return "Failed";
-        }
-    }
-
-    @Override
-    public String creditBalance(String id, BigDecimal amount) {
-        try {
-            Account account = getById(id);
-            log.info("Credit balance request:: Account Id [{}],  initial balance [{}], amount [{}]", id, account.getBalance(), amount);
-            account.setBalance(account.getBalance().add(amount));
-            Transaction transaction = prepareCreditTransaction(amount, id);
-            transactionServiceClient.create(transaction);
-            accountService.updateAccount(id, account);
-            log.info(" Current balance [{}]", account.getBalance());
-            return "Successful";
-        }catch (Exception exception){
-            log.error(" An error occurred [{}]", exception.getMessage(), exception);
-            return "Failed";
-        }
     }
 
     @Override
@@ -210,7 +178,6 @@ public class AccountHandlerImpl extends BaseHandler implements AccountHandler {
           account.setBalance(account.getBalance().subtract(new BigDecimal(withdrawDTO.getAmount())));
           account = accountService.updateAccount(withdrawDTO.getBeneficiaryAccountId(), account);
           log.info(" Current Balance [{}] ", account.getBalance());
-          emailServiceClient.sendEmail(account.getEmail(), transaction.getOtp(), " WITHDRAWAL OTP ");
           return "Successful";
        }catch (Exception exception){
            return "Failed";
@@ -240,7 +207,6 @@ public class AccountHandlerImpl extends BaseHandler implements AccountHandler {
             accountService.updateAccounts(Arrays.asList(sourceAccount, beneficiaryAccount));
             log.info(" Current Source Balance [{}] ", sourceAccount.getBalance());
             log.info(" Current Beneficiary Balance [{}] ", beneficiaryAccount.getBalance());
-            emailServiceClient.sendEmail(sourceAccount.getEmail(), transaction.getOtp(), " TRANSFER OTP ");
             return "Successful";
         }catch (RuntimeException exception){
             log.error(" An error occurred [{}]", exception.getMessage(), exception);
@@ -251,6 +217,17 @@ public class AccountHandlerImpl extends BaseHandler implements AccountHandler {
     @Override
     public Account enquiry(String msisdn) {
         return accountService.getByMsisdn(msisdn);
+    }
+
+    @Override
+    public List<Account> updateBalances(List<Account> accounts) {
+        List<Account> savedAccounts = new ArrayList<>();
+        accounts.forEach(account -> {
+            Account savedAccount =  getById(account.getId());
+            savedAccount.setBalance(account.getBalance());
+            savedAccounts.add(savedAccount);
+        });
+        return accountService.updateAccounts(savedAccounts);
     }
 
     private Account prepareAccountEntity(AccountDTO accountDTO){
@@ -272,7 +249,7 @@ public class AccountHandlerImpl extends BaseHandler implements AccountHandler {
                 accountDTO.getAddress().getCountry()
         );
 
-        String otp = generateOTP();
+        //String otp = generateOTP();
         Account account = Account.build(
                 accountDTO.getName(),
                 accountDTO.getBusinessName(),
@@ -282,8 +259,8 @@ public class AccountHandlerImpl extends BaseHandler implements AccountHandler {
                 hashManagerHandler.hashData(accountDTO.getPin()),
                 null,
                 accountDTO.getMsisdn(),
-                otp,
-                AccountStatus.INACTIVE,
+                null,
+                AccountStatus.ACTIVE,
                 accountDTO.getAccountType(),
                 bankDetail,
                 null,
@@ -307,6 +284,7 @@ public class AccountHandlerImpl extends BaseHandler implements AccountHandler {
         transaction.setDestinationAccount(beneficiaryId);
         transaction.setStatus(TransactionStatus.SCHEDULED);
         transaction.setSourceAccount("Pentspace");
+        transaction.setTransactionSource(TransactionSource.ACCOUNT);
         return transaction;
     }
 
@@ -315,8 +293,9 @@ public class AccountHandlerImpl extends BaseHandler implements AccountHandler {
         transaction.setTransactionType(TransactionType.TRANSFER);
         transaction.setAmount(new BigDecimal(amount));
         transaction.setDestinationAccount(beneficiaryId);
-        transaction.setStatus(TransactionStatus.SCHEDULED);
+        transaction.setStatus(TransactionStatus.COMPLETED);
         transaction.setSourceAccount(sourceId);
+        transaction.setTransactionSource(TransactionSource.ACCOUNT);
         return transaction;
     }
 
@@ -328,24 +307,7 @@ public class AccountHandlerImpl extends BaseHandler implements AccountHandler {
         transaction.setStatus(TransactionStatus.COMPLETED);
         transaction.setSourceAccount(externalTransactionId);
         transaction.setMetaData(metaData);
-        return transaction;
-    }
-
-    private Transaction prepareDebitTransaction(BigDecimal amount, String beneficiaryId){
-        Transaction transaction = new Transaction();
-        transaction.setTransactionType(TransactionType.DEBIT);
-        transaction.setAmount(amount);
-        transaction.setDestinationAccount(beneficiaryId);
-        transaction.setStatus(TransactionStatus.COMPLETED);
-        return transaction;
-    }
-
-    private Transaction prepareCreditTransaction(BigDecimal amount, String beneficiaryId){
-        Transaction transaction = new Transaction();
-        transaction.setTransactionType(TransactionType.CREDIT);
-        transaction.setAmount(amount);
-        transaction.setDestinationAccount(beneficiaryId);
-        transaction.setStatus(TransactionStatus.COMPLETED);
+        transaction.setTransactionSource(TransactionSource.ACCOUNT);
         return transaction;
     }
 

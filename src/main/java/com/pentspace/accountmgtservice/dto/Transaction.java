@@ -1,5 +1,6 @@
 package com.pentspace.accountmgtservice.dto;
 
+import com.pentspace.accountmgtservice.entities.enums.TransactionSource;
 import com.pentspace.accountmgtservice.entities.enums.TransactionStatus;
 import com.pentspace.accountmgtservice.entities.enums.TransactionType;
 import lombok.Data;
@@ -19,5 +20,6 @@ public class Transaction {
     private String otp;
     private String otpStatus;
     private String metaData;
+    private TransactionSource transactionSource;
 
 }

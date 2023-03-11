@@ -30,10 +30,10 @@ public class AccountEndpoint {
         return new ResponseEntity<>(accountHandler.createAccount(request), HttpStatus.OK);
     }
 
-    @PostMapping(path = "/complete/registration", produces = "application/json")
-    public ResponseEntity<Account> completeRegistration(@RequestBody RegistrationCompletionDTO request){
-        return new ResponseEntity<>(accountHandler.activate(request.getAccountId(), request.getOtp()), HttpStatus.OK);
-    }
+//    @PostMapping(path = "/complete/registration", produces = "application/json")
+//    public ResponseEntity<Account> completeRegistration(@RequestBody RegistrationCompletionDTO request){
+//        return new ResponseEntity<>(accountHandler.activate(request.getAccountId(), request.getOtp()), HttpStatus.OK);
+//    }
 
     @PostMapping(path = "/auth", produces = "application/json", consumes = "application/json")
     public ResponseEntity<Account> authenticateAccount(@RequestBody LoginDTO loginDTO){
@@ -65,16 +65,6 @@ public class AccountEndpoint {
         return new ResponseEntity<>(accountHandler.linkAccountWithService(accountServiceLinkDTO.getAccountId(), accountServiceLinkDTO.getServiceId()), HttpStatus.OK);
     }
 
-    @PutMapping(path = "/balance/debit", produces = "text/plain")
-    public ResponseEntity<String> debitBalance(@RequestParam("id") String id, @RequestParam("amount") String amount){
-        return new ResponseEntity<>(accountHandler.debitBalance(id,new BigDecimal(amount)), HttpStatus.OK);
-    }
-
-    @PutMapping(path = "/balance/credit", produces = "text/plain")
-    public ResponseEntity<String> creditBalance(@RequestParam("id") String id, @RequestParam("amount") String amount){
-        return new ResponseEntity<>(accountHandler.creditBalance(id,new BigDecimal(amount)), HttpStatus.OK);
-    }
-
     @GetMapping(path = "enquiry/{msisdn}", produces = "application/json")
     public ResponseEntity<Account> getAccountByMsisdn(@PathVariable("msisdn") String msisdn){
         return new ResponseEntity<>(accountHandler.enquiry(msisdn), HttpStatus.OK);
@@ -95,9 +85,14 @@ public class AccountEndpoint {
         return new ResponseEntity<>(accountHandler.payment(beneficiaryId, externalTransactionId), HttpStatus.OK);
     }
 
-    @GetMapping(path = "/deposit/status/check/{externalTransactionId}", produces = "application/json")
-    public ResponseEntity<PaystackPaymentStatusDTO> getDepositStatus(@PathVariable("externalTransactionId") String externalTransactionId){
+    @GetMapping(path = "/payment/status/check/{externalTransactionId}", produces = "application/json")
+    public ResponseEntity<PaystackPaymentStatusDTO> getPaymentStatus(@PathVariable("externalTransactionId") String externalTransactionId){
         return new ResponseEntity<>(paystackServiceClient.verifyPayment(externalTransactionId), HttpStatus.OK);
+    }
+
+    @PutMapping(path = "balance/update",consumes = "application/json", produces = "application/json")
+    public ResponseEntity<List<Account>> updateBalances(@RequestBody List<Account> accounts){
+        return new ResponseEntity<>(accountHandler.updateBalances(accounts), HttpStatus.OK);
     }
 
 }
