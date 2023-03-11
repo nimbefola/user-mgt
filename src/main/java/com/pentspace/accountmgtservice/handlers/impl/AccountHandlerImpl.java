@@ -51,12 +51,12 @@ public class AccountHandlerImpl extends BaseHandler implements AccountHandler {
     public Account createAccount(AccountDTO accountDTO) {
         Account account = prepareAccountEntity(accountDTO);
         account =  accountService.create(account);
-        if(Objects.nonNull(account.getId())){
-            RegistrationNotificationDTO registrationNotificationDTO = new RegistrationNotificationDTO();
-            registrationNotificationDTO.setUserEmail(account.getEmail());
-            registrationNotificationDTO.setContent(account.getActivationOtp());
-            log.info(" Response from email client [{}] ", emailServiceClient.sendEmail(account.getEmail(), account.getActivationOtp(), "REGISTRATION OTP"));
-        }
+//        if(Objects.nonNull(account.getId())){
+//            RegistrationNotificationDTO registrationNotificationDTO = new RegistrationNotificationDTO();
+//            registrationNotificationDTO.setUserEmail(account.getEmail());
+//            registrationNotificationDTO.setContent(account.getActivationOtp());
+//            log.info(" Response from email client [{}] ", emailServiceClient.sendEmail(account.getEmail(), account.getActivationOtp(), "REGISTRATION OTP"));
+//        }
         return account;
     }
 
