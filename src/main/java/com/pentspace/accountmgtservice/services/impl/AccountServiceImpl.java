@@ -17,31 +17,33 @@ public class AccountServiceImpl implements AccountService {
 
     @Autowired
     private AccountRepository accountRepository;
-    @Override
-    public Account create(Account account) {
-        return accountRepository.save(account);
-    }
 
-    @Override
-    public Account getByUsername(String username) {
-        return accountRepository.findByUsername(username).orElseThrow(()->new NoSuchElementException("Account not found"));
-    }
 
-    @Override
-    public Account activate(String id, String OTP) {
-        Account account = accountRepository.findById(id).orElseThrow(()->new NoSuchElementException("Account not found"));
-            try {
-                if(!account.getActivationOtp().equalsIgnoreCase(OTP)){
-                    log.error(" Invalid OTP [{}]", OTP);
-                    throw new RuntimeException("Invalid OTP");
-                }
-            } catch (RuntimeException exception) {
-                throw exception;
-            }
-        account.setStatus(AccountStatus.ACTIVE);
-        return accountRepository.save(account);
-    }
-
+//    @Override
+//    public Account create(Account account) {
+//        return accountRepository.save(account);
+//    }
+//
+//    @Override
+//    public Account getByUsername(String username) {
+//        return accountRepository.findByUsername(username).orElseThrow(()->new NoSuchElementException("Account not found"));
+//    }
+//
+////    @Override
+////    public Account activate(String id, String OTP) {
+////        Account account = accountRepository.findById(id).orElseThrow(()->new NoSuchElementException("Account not found"));
+////            try {
+////                if(!account.getActivationOtp().equalsIgnoreCase(OTP)){
+////                    log.error(" Invalid OTP [{}]", OTP);
+////                    throw new RuntimeException("Invalid OTP");
+////                }
+////            } catch (RuntimeException exception) {
+////                throw exception;
+////            }
+////        account.setStatus(AccountStatus.ACTIVE);
+////        return accountRepository.save(account);
+////    }
+//
     @Override
     public Account getById(String id) {
         return accountRepository.findById(id).orElseThrow(()->new NoSuchElementException("Account not found"));

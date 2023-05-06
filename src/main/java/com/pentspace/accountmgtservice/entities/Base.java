@@ -13,6 +13,7 @@ public abstract class Base implements Serializable {
     private static final long serialVersionUID = 1L;
     @Version
     private Long version;
+
     @Id
     @GeneratedValue(generator = "uuid")
     @GenericGenerator(name = "uuid", strategy = "org.hibernate.id.UUIDGenerator")
@@ -30,9 +31,9 @@ public abstract class Base implements Serializable {
         return id;
     }
 
-    public void setId(String id) {
-        this.id = id;
-    }
+    //public void setId(String id) {
+//        this.id = id;
+//    }
 
     public Date getCreated() {
         return created;
@@ -54,7 +55,7 @@ public abstract class Base implements Serializable {
         return version;
     }
 
-    public void setVersion(Long version) {
-        this.version = version;
-    }
+//    public void setVersion(Long version) {
+//        this.version = version;
+//    }
 }

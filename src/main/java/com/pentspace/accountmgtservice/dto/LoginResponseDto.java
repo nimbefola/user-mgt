@@ -1,10 +1,11 @@
 package com.pentspace.accountmgtservice.dto;
 
 import com.pentspace.accountmgtservice.entities.Address;
+import com.pentspace.accountmgtservice.entities.BankDetail;
 import com.pentspace.accountmgtservice.entities.Service;
 import com.pentspace.accountmgtservice.entities.enums.AccountStatus;
 import com.pentspace.accountmgtservice.entities.enums.AccountType;
-import com.pentspace.accountmgtservice.entities.BankDetail;
+import com.pentspace.accountmgtservice.security.securityUtils.JWTToken;
 import lombok.Data;
 
 import javax.validation.Valid;
@@ -15,7 +16,8 @@ import javax.validation.constraints.Pattern;
 import java.math.BigDecimal;
 
 @Data
-public class AccountDTO {
+public class LoginResponseDto {
+
     @NotBlank
     private String name;
     private String businessName;
@@ -38,4 +40,6 @@ public class AccountDTO {
     @Valid
     private BankDetail bankDetail;
     private BigDecimal balance;
+
+    private JWTToken token;
 }

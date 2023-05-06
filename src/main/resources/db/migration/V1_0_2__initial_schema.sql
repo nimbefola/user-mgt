@@ -1,5 +1,5 @@
 
-CREATE SEQUENCE hibernate_sequence START 1 INCREMENT 1;
+--CREATE SEQUENCE hibernate_sequence START 1 INCREMENT 1;
 
 DROP TABLE IF EXISTS  account;
 create TABLE account (
@@ -15,13 +15,16 @@ create TABLE account (
     "pin" VARCHAR(255) NOT NULL,
     "profile_picture_url" VARCHAR(255) NULL,
     "msisdn" VARCHAR(255) NOT NULL,
-    "activation_otp" VARCHAR(255) NULL,
     "status" VARCHAR(255) NOT NULL,
     "account_type" VARCHAR(255) NOT NULL,
     "service_description" VARCHAR(255) NULL,
     "address_id" VARCHAR(255) NOT NULL,
     "bank_detail_id" VARCHAR(255) NOT NULL,
     "balance" VARCHAR(255) NOT NULL,
+    "locked" BOOLEAN,
+    "enabled" BOOLEAN,
+    "validation_token"  VARCHAR(255),
+    "reset_password_token" VARCHAR(255) ,
     primary key (id)
 );
 

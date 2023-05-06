@@ -4,6 +4,8 @@ import com.pentspace.accountmgtservice.clients.PaystackServiceClient;
 import com.pentspace.accountmgtservice.dto.*;
 import com.pentspace.accountmgtservice.entities.Account;
 import com.pentspace.accountmgtservice.entities.enums.AccountStatus;
+import com.pentspace.accountmgtservice.exceptions.AuthorizationException;
+import com.pentspace.accountmgtservice.exceptions.GeneralServiceException;
 import com.pentspace.accountmgtservice.handlers.AccountHandler;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -12,6 +14,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import javax.mail.MessagingException;
 import javax.validation.Valid;
 import java.math.BigDecimal;
 import java.util.List;
@@ -25,74 +28,167 @@ public class AccountEndpoint {
     @Autowired
     private PaystackServiceClient paystackServiceClient;
 
-    @PostMapping( produces = "application/json", consumes = "application/json")
-    public ResponseEntity<Account> create(@RequestBody @Valid AccountDTO request) {
-        return new ResponseEntity<>(accountHandler.createAccount(request), HttpStatus.OK);
+    @PostMapping(produces = "application/json", consumes = "application/json")
+    public ResponseEntity<?> create(@RequestBody @Valid AccountDTO request) throws MessagingException, GeneralServiceException {
+        try{
+        return new ResponseEntity<>(accountHandler.createAccount(request),  HttpStatus.OK);
+        }
+        catch (Exception exception){
+            return new ResponseEntity<>(exception.getMessage(),HttpStatus.BAD_REQUEST);
+        }
     }
 
-//    @PostMapping(path = "/complete/registration", produces = "application/json")
-//    public ResponseEntity<Account> completeRegistration(@RequestBody RegistrationCompletionDTO request){
-//        return new ResponseEntity<>(accountHandler.activate(request.getAccountId(), request.getOtp()), HttpStatus.OK);
-//    }
+    @PostMapping(path = "/validate")
+    public ResponseEntity<?> validate(@RequestBody @Valid ValidateDto request) {
+        try{
+            return new ResponseEntity<>(accountHandler.validateAccount(request), HttpStatus.OK);
+        }
+        catch (Exception exception){
+            return new ResponseEntity<>(exception.getMessage(),HttpStatus.BAD_REQUEST);
+        }
+    }
 
-    @PostMapping(path = "/auth", produces = "application/json", consumes = "application/json")
-    public ResponseEntity<Account> authenticateAccount(@RequestBody LoginDTO loginDTO){
-        return new ResponseEntity<>(accountHandler.authenticateAccount(loginDTO.getUsername(), loginDTO.getPassword()), HttpStatus.OK);
+    @PostMapping(path = "/login")
+    public ResponseEntity<?> login(@RequestBody @Valid LoginDTO request) throws MessagingException, GeneralServiceException {
+        try{
+            return new ResponseEntity<>(accountHandler.login(request), HttpStatus.OK);
+        }
+        catch (Exception exception){
+            return new ResponseEntity<>(exception.getMessage(),HttpStatus.BAD_REQUEST);
+        }
+    }
+
+    @PostMapping(path = "/changePassword")
+    public ResponseEntity<?> changePassword(@RequestBody @Valid ChangePasswordDTO request,@RequestParam("authentication") String authentication) throws MessagingException, GeneralServiceException {
+        try{
+            return new ResponseEntity<>(accountHandler.changePassword(request,authentication), HttpStatus.OK);
+        }
+        catch (Exception exception){
+            return new ResponseEntity<>(exception.getMessage(),HttpStatus.BAD_REQUEST);
+        }
+    }
+
+    @PostMapping(path = "/forgotPassword")
+    public ResponseEntity<?> forgotPassword(@RequestBody @Valid ForgotPasswordDTO request) throws MessagingException, GeneralServiceException {
+        try{
+            return new ResponseEntity<>(accountHandler.forgotPassword(request), HttpStatus.OK);
+        }
+        catch (Exception exception){
+            return new ResponseEntity<>(exception.getMessage(),HttpStatus.BAD_REQUEST);
+        }
+    }
+
+    @PostMapping(path = "/validateTokenAndPassword")
+    public ResponseEntity<?> retrievePassword(@RequestBody @Valid RetrieveForgotPasswordDTO request) throws MessagingException, GeneralServiceException {
+        try{
+            return new ResponseEntity<>(accountHandler.retrieveForgottenPassword(request), HttpStatus.OK);
+        }
+        catch (Exception exception){
+            return new ResponseEntity<>(exception.getMessage(),HttpStatus.BAD_REQUEST);
+        }
     }
 
     @GetMapping(path = "/{id}", produces = "application/json")
-    public ResponseEntity<Account> getById(@PathVariable("id") String id){
-        return new ResponseEntity<>(accountHandler.getById(id), HttpStatus.OK);
+    public ResponseEntity<?> getById(@PathVariable("id") String id) {
+        try {
+            return new ResponseEntity<>(accountHandler.getById(id), HttpStatus.OK);
+        } catch (Exception exception) {
+            return new ResponseEntity<>(exception.getMessage(), HttpStatus.BAD_REQUEST);
+        }
     }
 
+
     @GetMapping(produces = "application/json")
-    public ResponseEntity<List<Account>> getAll(){
-        return new ResponseEntity<>(accountHandler.getAccounts(), HttpStatus.OK);
+    public ResponseEntity<?> getAll(@RequestParam("authentication") String authentication){
+        try {
+        return new ResponseEntity<>(accountHandler.getAccounts(authentication), HttpStatus.OK);
+        } catch (Exception exception) {
+            return new ResponseEntity<>(exception.getMessage(), HttpStatus.BAD_REQUEST);
+        }
     }
 
     @PutMapping(path = "/status/update", produces = "application/json")
-    public ResponseEntity<Account> updateAccountStatus(@RequestParam("id") String id, @RequestParam("status") String status){
-        return new ResponseEntity<>(accountHandler.updateAccountStatus(id, AccountStatus.valueOf(status)), HttpStatus.OK);
+    public ResponseEntity<?> updateAccountStatus(@RequestParam("id") String id, @RequestParam("status") String status,@RequestParam("authentication") String authentication) throws AuthorizationException, GeneralServiceException {
+        try {
+        return new ResponseEntity<>(accountHandler.updateAccountStatus(id, AccountStatus.valueOf(status), authentication), HttpStatus.OK);
+        } catch (Exception exception) {
+            return new ResponseEntity<>(exception.getMessage(), HttpStatus.BAD_REQUEST);
+        }
     }
 
+
     @PostMapping(path = "profile/picture/upload/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<Account> uploadProfilePicture(@PathVariable("id") String id, @RequestParam("file") MultipartFile file) {
-        return new ResponseEntity<>(accountHandler.uploadProfilePicture(id, file),HttpStatus.OK);
+    public ResponseEntity<?> uploadProfilePicture(@PathVariable("id") String id, @RequestParam("file") MultipartFile file,@RequestParam("authentication") String authentication) {
+        try{
+        return new ResponseEntity<>(accountHandler.uploadProfilePicture(id, file,authentication),HttpStatus.OK);
+        } catch (Exception exception) {
+            return new ResponseEntity<>(exception.getMessage(), HttpStatus.BAD_REQUEST);
+        }
     }
 
     @PostMapping(path = "service/link", consumes = "application/json", produces = "application/json")
-    public ResponseEntity<Account> linkAccountToService(@RequestBody @Valid AccountServiceLinkDTO accountServiceLinkDTO){
-        return new ResponseEntity<>(accountHandler.linkAccountWithService(accountServiceLinkDTO.getAccountId(), accountServiceLinkDTO.getServiceId()), HttpStatus.OK);
+    public ResponseEntity<?> linkAccountToService(@RequestBody @Valid AccountServiceLinkDTO accountServiceLinkDTO,@RequestParam("authentication") String authentication){
+        try{
+        return new ResponseEntity<>(accountHandler.linkAccountWithService(accountServiceLinkDTO.getAccountId(), accountServiceLinkDTO.getServiceId(),authentication), HttpStatus.OK);
+        } catch (Exception exception) {
+            return new ResponseEntity<>(exception.getMessage(), HttpStatus.BAD_REQUEST);
+        }
     }
+
 
     @GetMapping(path = "enquiry/{msisdn}", produces = "application/json")
-    public ResponseEntity<Account> getAccountByMsisdn(@PathVariable("msisdn") String msisdn){
-        return new ResponseEntity<>(accountHandler.enquiry(msisdn), HttpStatus.OK);
+    public ResponseEntity<?> getAccountByMsisdn(@PathVariable("msisdn") String msisdn,@RequestParam("authentication") String authentication){
+        try{
+        return new ResponseEntity<>(accountHandler.enquiry(msisdn,authentication), HttpStatus.OK);
+        } catch (Exception exception) {
+            return new ResponseEntity<>(exception.getMessage(), HttpStatus.BAD_REQUEST);
+        }
     }
 
-    @PostMapping(path = "/transfer", consumes = "application/json", produces = "application/json")
-    public ResponseEntity<String> transfer(@RequestBody TransferDTO transferDTO){
-        return new ResponseEntity<>(accountHandler.transfer(transferDTO), HttpStatus.OK);
+    @PostMapping(path = "/transfer", produces = "application/json")
+    public ResponseEntity<String> transfer(@RequestBody TransferDTO transferDTO,@RequestParam("authentication") String authentication){
+        try{
+        return new ResponseEntity<>(accountHandler.transfer(transferDTO,authentication), HttpStatus.OK); //,authentication
+        } catch (Exception exception) {
+            return new ResponseEntity<>(exception.getMessage(), HttpStatus.BAD_REQUEST);
+        }
     }
+
 
     @PostMapping(path = "/withdraw", consumes = "application/json", produces = "application/json")
-    public ResponseEntity<String> withdraw(@RequestBody WithdrawDTO withdrawDTO){
-        return new ResponseEntity<>(accountHandler.withdraw(withdrawDTO), HttpStatus.OK);
+    public ResponseEntity<?> withdraw(@RequestBody WithdrawDTO withdrawDTO,@RequestParam("authentication") String authentication){
+        try {
+        return new ResponseEntity<>(accountHandler.withdraw(withdrawDTO,authentication), HttpStatus.OK);
+        } catch (Exception exception) {
+       return new ResponseEntity<>(exception.getMessage(), HttpStatus.BAD_REQUEST);
+        }
     }
 
     @PutMapping(path = "/payment/{beneficiaryId}/{externalTransactionId}", produces = "application/json")
-    public ResponseEntity<String> payment(@PathVariable("beneficiaryId") String beneficiaryId, @PathVariable("externalTransactionId") String externalTransactionId){
-        return new ResponseEntity<>(accountHandler.payment(beneficiaryId, externalTransactionId), HttpStatus.OK);
+    public ResponseEntity<String> payment(@PathVariable("beneficiaryId") String beneficiaryId, @PathVariable("externalTransactionId") String externalTransactionId,@RequestParam("authentication") String authentication){
+        try {
+        return new ResponseEntity<>(accountHandler.payment(beneficiaryId, externalTransactionId,authentication), HttpStatus.OK);
+        } catch (Exception exception) {
+            return new ResponseEntity<>(exception.getMessage(), HttpStatus.BAD_REQUEST);
+        }
     }
 
     @GetMapping(path = "/payment/status/check/{externalTransactionId}", produces = "application/json")
-    public ResponseEntity<PaystackPaymentStatusDTO> getPaymentStatus(@PathVariable("externalTransactionId") String externalTransactionId){
+    public ResponseEntity<?> getPaymentStatus(@PathVariable("externalTransactionId") String externalTransactionId,@RequestParam("authentication") String authentication){
+        try{
         return new ResponseEntity<>(paystackServiceClient.verifyPayment(externalTransactionId), HttpStatus.OK);
+        } catch (Exception exception) {
+            return new ResponseEntity<>(exception.getMessage(), HttpStatus.BAD_REQUEST);
+        }
     }
 
     @PutMapping(path = "balance/update",consumes = "application/json", produces = "application/json")
-    public ResponseEntity<List<Account>> updateBalances(@RequestBody List<Account> accounts){
-        return new ResponseEntity<>(accountHandler.updateBalances(accounts), HttpStatus.OK);
+    public ResponseEntity<?> updateBalances(@RequestBody List<Account> accounts,@RequestParam("authentication") String authentication){
+        try {
+        return new ResponseEntity<>(accountHandler.updateBalances(accounts,authentication), HttpStatus.OK);
+        } catch (Exception exception) {
+            return new ResponseEntity<>(exception.getMessage(), HttpStatus.BAD_REQUEST);
+        }
     }
 
 }
