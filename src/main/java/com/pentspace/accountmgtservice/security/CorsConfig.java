@@ -8,11 +8,11 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 public class CorsConfig {
 
     public final String [] ALLOWED_ORIGINS = {
-            "http://localhost:30303",
-            "http://localhost:30304",
-            "http://localhost:30305",
-            "http://localhost:30306",
-            "http://localhost:30307"
+            "https://localhost:30303",
+            "https://localhost:30304",
+            "https://localhost:30305",
+            "https://localhost:30306",
+            "https://localhost:30307"
 
     };
 
