@@ -22,14 +22,14 @@ public class SpringFoxConfig {
     @Bean
     public OpenAPI appInfo() {
 
-        Server server = new Server();
-
-        server.setUrl("https://xx483ppzvi.eu-west-1.awsapprunner.com");
-
-
-        server.setUrl("https://xx483ppzvi.eu-west-1.awsapprunner.com");
-        ArrayList<Server> servers = new ArrayList<>();
-        servers.add(server);
+//        Server server = new Server();
+//
+//        server.setUrl("https://xx483ppzvi.eu-west-1.awsapprunner.com");
+//
+//
+//        server.setUrl("https://xx483ppzvi.eu-west-1.awsapprunner.com");
+//        ArrayList<Server> servers = new ArrayList<>();
+//        servers.add(server);
 
         return new OpenAPI()
 
