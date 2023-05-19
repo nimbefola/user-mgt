@@ -2,7 +2,7 @@ package com.pentspace.accountmgtservice.security.securityUtils;
 
 public class SecurityConstants {
 
-    public static final String AUTHORITIES_KEY = "accountype";
+    public static final String AUTHORITIES_KEY = "roles";
 
     public static final String SIGNING_KEY_STRING = "appsecret";
 

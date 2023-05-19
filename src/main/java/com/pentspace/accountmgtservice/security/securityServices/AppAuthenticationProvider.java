@@ -2,8 +2,11 @@ package com.pentspace.accountmgtservice.security.securityServices;
 
 
 import com.pentspace.accountmgtservice.entities.Account;
+import com.pentspace.accountmgtservice.entities.User;
 import com.pentspace.accountmgtservice.entities.enums.AccountType;
+import com.pentspace.accountmgtservice.entities.enums.Roles;
 import com.pentspace.accountmgtservice.entities.repositories.AccountRepository;
+import com.pentspace.accountmgtservice.entities.repositories.UserRepository;
 import com.pentspace.accountmgtservice.exceptions.ApplicationExceptionHandler;
 import com.pentspace.accountmgtservice.exceptions.AuthorizationException;
 import lombok.extern.slf4j.Slf4j;
@@ -28,7 +31,7 @@ import java.util.stream.Collectors;
 public class AppAuthenticationProvider implements AuthenticationManager {
 
     @Autowired
-    AccountRepository accountRepository;
+    UserRepository userRepository;
 
 
     @Override
@@ -40,7 +43,7 @@ public class AppAuthenticationProvider implements AuthenticationManager {
 
 
 
-        Optional<Account> user = accountRepository.findByEmail(name);
+        Optional<User> user = userRepository.findUserByEmail(name);
 
         if (!user.isPresent()) {
             throw new BadCredentialsException("There is not account with given credentials");
@@ -48,9 +51,9 @@ public class AppAuthenticationProvider implements AuthenticationManager {
 
 
         //UsersEntity usersEntity=user.get();
-        Account account = user.get();
-        List<AccountType> authorities = Collections.singletonList(account.getAccountType());
-        if(account.getAccountType() == null) {
+        User userEntity = user.get();
+        List<Roles> authorities = Collections.singletonList(userEntity.getRoles());
+        if(userEntity.getRoles() == null) {
             try {
                 throw new AuthorizationException("User has no authority");
             } catch (AuthorizationException e) {

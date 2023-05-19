@@ -5,6 +5,7 @@ import com.pentspace.accountmgtservice.entities.BankDetail;
 import com.pentspace.accountmgtservice.entities.Service;
 import com.pentspace.accountmgtservice.entities.enums.AccountStatus;
 import com.pentspace.accountmgtservice.entities.enums.AccountType;
+import com.pentspace.accountmgtservice.entities.enums.Roles;
 import com.pentspace.accountmgtservice.security.securityUtils.JWTToken;
 import lombok.Data;
 
@@ -18,28 +19,22 @@ import java.math.BigDecimal;
 @Data
 public class LoginResponseDto {
 
-    @NotBlank
-    private String name;
-    private String businessName;
-    @Email(message = "Please provide a valid Email")
-    private String email;
-    @NotBlank
-    private String username;
-    @NotBlank
-    private String password;
-    @NotBlank
-    private String pin;
-    private String profilePictureUrl;
-    @Pattern(regexp = "^\\d{11}$", message = "MSISDN should be 11 digits numbers only")
-    private String msisdn;
-    private AccountStatus status;
-    private AccountType accountType;
-    private Service service;
-    @NotNull
-    private Address address;
-    @Valid
-    private BankDetail bankDetail;
-    private BigDecimal balance;
+    private String id;
 
+    private String firstName;
+
+    private String lastName;
+
+    private String phoneNumber;
+
+    private String password;
+    
+    private Roles roles;
+
+    private String country;
+
+    private String email;
+
+    private Roles role;
     private JWTToken token;
 }

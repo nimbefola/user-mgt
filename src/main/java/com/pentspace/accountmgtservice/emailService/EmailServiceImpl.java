@@ -2,6 +2,7 @@ package com.pentspace.accountmgtservice.emailService;
 
 
 import com.pentspace.accountmgtservice.entities.Account;
+import com.pentspace.accountmgtservice.entities.User;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Service;
@@ -31,10 +32,10 @@ public class EmailServiceImpl implements EmailService {
     }
 
     @Override
-    public void sendRegistrationSuccessfulEmail(Account account, String token) throws MessagingException {
+    public void sendRegistrationSuccessfulEmail(User user, String token) throws MessagingException {
         String link = "http://localhost:9090" + token;
 
-        simpleMailMessage.setTo(account.getEmail());
+        simpleMailMessage.setTo(user.getEmail());
         simpleMailMessage.setSubject("Account Activation");
         simpleMailMessage.setFrom("PENTSPACE");
         String template = "Dear [[name]],\n"
@@ -43,7 +44,7 @@ public class EmailServiceImpl implements EmailService {
                 + "[[code]]\n"
                 + "Thank you.\n"
                 + "Pent space team";
-        template = template.replace("[[name]]", account.getName());
+        template = template.replace("[[name]]", user.getFirstName());
         template = template.replace("[[code]]", token);
         simpleMailMessage.setText(template);
 
@@ -56,14 +57,14 @@ public class EmailServiceImpl implements EmailService {
     }
 
     @Override
-    public void sendVerificationMessage(Account account) throws MessagingException {
+    public void sendVerificationMessage(User user) throws MessagingException {
 
         SimpleMailMessage message = new SimpleMailMessage();
         simpleMailMessage.setText("PENTSPACE");
 
-        simpleMailMessage.setFrom("salamkorede345@gmail.com");
+        simpleMailMessage.setFrom("PENTSPACE");
         //simpleMailMessage.setTo(usersEntity.getEmail());
-        simpleMailMessage.setTo(account.getEmail());
+        simpleMailMessage.setTo(user.getEmail());
         simpleMailMessage.setSubject("Welcome to Pentspace");
         String template = "Dear [[name]],\n"
                 + "Your account has been verified, kindly login to explore\n"
@@ -71,7 +72,7 @@ public class EmailServiceImpl implements EmailService {
                 + "Thank you,\n\n"
                 + "The Pentspace Team";
         //    template = template.replace("[[name]]", usersEntity.getFirstName());
-        template = template.replace("[[name]]", account.getName());
+        template = template.replace("[[name]]", user.getFirstName());
         template = template.replace("[[URL]]", "Pentspace");
         // message.setText(template);
         simpleMailMessage.setText(template);
@@ -83,14 +84,14 @@ public class EmailServiceImpl implements EmailService {
     }
 
     @Override
-    public void sendChangePasswordMessage(Account account) throws MessagingException {
+    public void sendChangePasswordMessage(User user) throws MessagingException {
 
         SimpleMailMessage message = new SimpleMailMessage();
         simpleMailMessage.setText("Pentspace");
 
         simpleMailMessage.setFrom("PENTSPACE");
 
-        simpleMailMessage.setTo(account.getEmail());
+        simpleMailMessage.setTo(user.getEmail());
         simpleMailMessage.setSubject("Change Password");
         String template = "Dear [[name]],\n"
                 + "You have successfully change your password!"
@@ -98,7 +99,7 @@ public class EmailServiceImpl implements EmailService {
                 + "[[URL]]\n"
                 + "Thank you,\n\n"
                 + "The Pentspace Team";
-        template = template.replace("[[name]]", account.getName());
+        template = template.replace("[[name]]", user.getFirstName());
         template = template.replace("[[URL]]", "Pentspace");
         simpleMailMessage.setText(template);
         try {
@@ -110,9 +111,9 @@ public class EmailServiceImpl implements EmailService {
     }
 
     @Override
-    public void sendForgotPasswordMessage(Account account, String token) throws MessagingException {
+    public void sendForgotPasswordMessage(User user, String token) throws MessagingException {
         String link = "http://localhost:9090" + token;
-        simpleMailMessage.setTo(account.getEmail());
+        simpleMailMessage.setTo(user.getEmail());
         simpleMailMessage.setSubject("Password Recovery");
         simpleMailMessage.setFrom("PENTSPACE");
         String template = "Dear [[name]],\n"
@@ -121,7 +122,7 @@ public class EmailServiceImpl implements EmailService {
                 + "[[code]]\n"
                 + "Thank you.\n"
                 + "Pentspace team";
-        template = template.replace("[[name]]", account.getName());
+        template = template.replace("[[name]]", user.getFirstName());
         template = template.replace("[[code]]", token);
         simpleMailMessage.setText(template);
 
@@ -134,21 +135,21 @@ public class EmailServiceImpl implements EmailService {
     }
 
     @Override
-    public void resetPasswordConfirmation(Account account) throws MessagingException {
+    public void resetPasswordConfirmation(User user) throws MessagingException {
 
         SimpleMailMessage message = new SimpleMailMessage();
         simpleMailMessage.setText("PENTSPACE");
 
         simpleMailMessage.setFrom("PENTSPACE");
         //simpleMailMessage.setTo(usersEntity.getEmail());
-        simpleMailMessage.setTo(account.getEmail());
+        simpleMailMessage.setTo(user.getEmail());
         simpleMailMessage.setSubject("Success!!!");
         String template = "Dear [[name]],\n"
                 + "Your account has been re-activated, kindly login to explore\n"
                 + "[[URL]]\n"
                 + "Thank you,\n\n"
                 + "The Pentspace Team";
-        template = template.replace("[[name]]", account.getName());
+        template = template.replace("[[name]]", user.getFirstName());
         template = template.replace("[[URL]]", "Pentspace");
         // message.setText(template);
         simpleMailMessage.setText(template);

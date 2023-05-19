@@ -7,6 +7,7 @@ import com.pentspace.accountmgtservice.entities.enums.AccountStatus;
 import com.pentspace.accountmgtservice.exceptions.AuthorizationException;
 import com.pentspace.accountmgtservice.exceptions.GeneralServiceException;
 import com.pentspace.accountmgtservice.handlers.AccountHandler;
+import com.pentspace.accountmgtservice.services.UserServices;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -25,13 +26,16 @@ import java.util.List;
 public class AccountEndpoint {
     @Autowired
     private AccountHandler accountHandler;
+
+    @Autowired
+    private UserServices userServices;
     @Autowired
     private PaystackServiceClient paystackServiceClient;
 
-    @PostMapping(produces = "application/json", consumes = "application/json")
-    public ResponseEntity<?> create(@RequestBody @Valid AccountDTO request) throws MessagingException, GeneralServiceException {
+    @PostMapping("/signUp")
+    public ResponseEntity<?> signUp(@RequestBody @Valid UserSignUpRequestDto request) throws MessagingException, GeneralServiceException {
         try{
-        return new ResponseEntity<>(accountHandler.createAccount(request),  HttpStatus.OK);
+            return new ResponseEntity<>(userServices.signUp(request),  HttpStatus.OK);
         }
         catch (Exception exception){
             return new ResponseEntity<>(exception.getMessage(),HttpStatus.BAD_REQUEST);
@@ -41,7 +45,7 @@ public class AccountEndpoint {
     @PostMapping(path = "/validate")
     public ResponseEntity<?> validate(@RequestBody @Valid ValidateDto request) {
         try{
-            return new ResponseEntity<>(accountHandler.validateAccount(request), HttpStatus.OK);
+            return new ResponseEntity<>(userServices.validateAccount(request), HttpStatus.OK);
         }
         catch (Exception exception){
             return new ResponseEntity<>(exception.getMessage(),HttpStatus.BAD_REQUEST);
@@ -51,7 +55,7 @@ public class AccountEndpoint {
     @PostMapping(path = "/login")
     public ResponseEntity<?> login(@RequestBody @Valid LoginDTO request) throws MessagingException, GeneralServiceException {
         try{
-            return new ResponseEntity<>(accountHandler.login(request), HttpStatus.OK);
+            return new ResponseEntity<>(userServices.login(request), HttpStatus.OK);
         }
         catch (Exception exception){
             return new ResponseEntity<>(exception.getMessage(),HttpStatus.BAD_REQUEST);
@@ -61,7 +65,7 @@ public class AccountEndpoint {
     @PostMapping(path = "/changePassword")
     public ResponseEntity<?> changePassword(@RequestBody @Valid ChangePasswordDTO request,@RequestParam("authentication") String authentication) throws MessagingException, GeneralServiceException {
         try{
-            return new ResponseEntity<>(accountHandler.changePassword(request,authentication), HttpStatus.OK);
+            return new ResponseEntity<>(userServices.changePassword(request,authentication), HttpStatus.OK);
         }
         catch (Exception exception){
             return new ResponseEntity<>(exception.getMessage(),HttpStatus.BAD_REQUEST);
@@ -71,7 +75,7 @@ public class AccountEndpoint {
     @PostMapping(path = "/forgotPassword")
     public ResponseEntity<?> forgotPassword(@RequestBody @Valid ForgotPasswordDTO request) throws MessagingException, GeneralServiceException {
         try{
-            return new ResponseEntity<>(accountHandler.forgotPassword(request), HttpStatus.OK);
+            return new ResponseEntity<>(userServices.forgotPassword(request), HttpStatus.OK);
         }
         catch (Exception exception){
             return new ResponseEntity<>(exception.getMessage(),HttpStatus.BAD_REQUEST);
@@ -81,12 +85,23 @@ public class AccountEndpoint {
     @PostMapping(path = "/validateTokenAndPassword")
     public ResponseEntity<?> retrievePassword(@RequestBody @Valid RetrieveForgotPasswordDTO request) throws MessagingException, GeneralServiceException {
         try{
-            return new ResponseEntity<>(accountHandler.retrieveForgottenPassword(request), HttpStatus.OK);
+            return new ResponseEntity<>(userServices.retrieveForgottenPassword(request), HttpStatus.OK);
         }
         catch (Exception exception){
             return new ResponseEntity<>(exception.getMessage(),HttpStatus.BAD_REQUEST);
         }
     }
+
+    @PostMapping(produces = "application/json", consumes = "application/json")
+    public ResponseEntity<?> create(@RequestBody @Valid AccountDTO request,String authentication) throws MessagingException, GeneralServiceException {
+        try{
+        return new ResponseEntity<>(accountHandler.createAccount(request,authentication),  HttpStatus.OK);
+        }
+        catch (Exception exception){
+            return new ResponseEntity<>(exception.getMessage(),HttpStatus.BAD_REQUEST);
+        }
+    }
+
 
     @GetMapping(path = "/{id}", produces = "application/json")
     public ResponseEntity<?> getById(@PathVariable("id") String id) {

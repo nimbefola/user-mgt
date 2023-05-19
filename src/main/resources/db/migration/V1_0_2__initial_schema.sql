@@ -1,6 +1,23 @@
 
 --CREATE SEQUENCE hibernate_sequence START 1 INCREMENT 1;
 
+DROP TABLE IF EXISTS  users;
+create TABLE users(
+    "id" VARCHAR(255) NOT NULL,
+    "first_name" VARCHAR(255) NOT NULL,
+    "last_name" VARCHAR(255) NOT NULL,
+    "email" VARCHAR(255) NOT NULL,
+    "password" VARCHAR(255) NOT NULL,
+    "phone_number" VARCHAR(255) NOT NULL,
+    "country" VARCHAR(255) NOT NULL,
+    "roles"  VARCHAR(255) NOT NULL,
+    "locked" BOOLEAN,
+    "enabled" BOOLEAN,
+    "validation_token"  VARCHAR(255),
+    "reset_password_token" VARCHAR(255) ,
+     primary key (id)
+ );
+
 DROP TABLE IF EXISTS  account;
 create TABLE account (
     "id" VARCHAR(255) NOT NULL,
@@ -11,7 +28,6 @@ create TABLE account (
     "business_name" VARCHAR(255) NULL,
     "email" VARCHAR(255) NOT NULL,
     "username" VARCHAR(255) NOT NULL,
-    "password" VARCHAR(255) NOT NULL,
     "pin" VARCHAR(255) NOT NULL,
     "profile_picture_url" VARCHAR(255) NULL,
     "msisdn" VARCHAR(255) NOT NULL,
@@ -21,10 +37,6 @@ create TABLE account (
     "address_id" VARCHAR(255) NOT NULL,
     "bank_detail_id" VARCHAR(255) NOT NULL,
     "balance" VARCHAR(255) NOT NULL,
-    "locked" BOOLEAN,
-    "enabled" BOOLEAN,
-    "validation_token"  VARCHAR(255),
-    "reset_password_token" VARCHAR(255) ,
     primary key (id)
 );
 

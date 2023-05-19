@@ -2,6 +2,7 @@ package com.pentspace.accountmgtservice.security.securityServices;
 
 
 import com.pentspace.accountmgtservice.entities.Account;
+import com.pentspace.accountmgtservice.entities.User;
 import io.jsonwebtoken.Claims;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -11,7 +12,7 @@ import java.util.function.Function;
 
 
 public interface TokenProviderService {
-    String generateLoginToken(Authentication authentication, Account account);
+    String generateLoginToken(Authentication authentication, User user);
 
 
     String getEmailFromToken(String token);

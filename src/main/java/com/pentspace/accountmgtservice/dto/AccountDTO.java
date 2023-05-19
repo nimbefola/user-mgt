@@ -24,13 +24,12 @@ public class AccountDTO {
     @NotBlank
     private String username;
     @NotBlank
-    private String password;
+
     @NotBlank
     private String pin;
     private String profilePictureUrl;
     @Pattern(regexp = "^\\d{11}$", message = "MSISDN should be 11 digits numbers only")
     private String msisdn;
-    private AccountStatus status;
     private AccountType accountType;
     private Service service;
     @NotNull

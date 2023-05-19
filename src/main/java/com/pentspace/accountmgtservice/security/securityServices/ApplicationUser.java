@@ -3,6 +3,7 @@ package com.pentspace.accountmgtservice.security.securityServices;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.pentspace.accountmgtservice.entities.Account;
+import com.pentspace.accountmgtservice.entities.User;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -25,19 +26,17 @@ public class ApplicationUser implements UserDetails {
 
     private String id;
 
-    private String name;
+    private String firstName;
 
-    private String businessName;
-
-    private String username;
-
-    private String address;
-
+    private String lastName;
     @JsonIgnore
     private  String email;
 
+    private String phoneNumber;
+
     @JsonIgnore
     private  String password;
+
 
     private Collection<? extends GrantedAuthority> authorities;
 
@@ -45,34 +44,34 @@ public class ApplicationUser implements UserDetails {
 
 
 
-    public static ApplicationUser create(Account account) {
+    public static ApplicationUser create(User user) {
         //user entity has no role. if you need a role, add field role
 
         List<GrantedAuthority> authorities = new ArrayList<>();
-        authorities.add(new SimpleGrantedAuthority(account.getAccountType().toString())); //user entity does not have role. create one
+        authorities.add(new SimpleGrantedAuthority(user.getRoles().toString())); //user entity does not have role. create one
         return new ApplicationUser(
-                String.valueOf(account.getId()),
-                account.getName(),
-                account.getBusinessName(),
-                account.getUsername(),
-                account.getEmail(),
-                account.getPassword(),
+                String.valueOf(user.getId()),
+                user.getFirstName(),
+                user.getLastName(),
+                user.getEmail(),
+                user.getPhoneNumber(),
+                user.getPassword(),
                 authorities
         );
     }
 
-    public ApplicationUser(String id, String name, String businessName,String username, String email, String password, Collection<? extends GrantedAuthority> authorities) {
+    public ApplicationUser(String id, String firstName, String lastName,  String email, String phoneNumber, String password, Collection<? extends GrantedAuthority> authorities) {
         this.id = id;
-        this.name = name;
-        this.businessName = businessName;
-        this.address = address;
+        this.firstName = firstName;
+        this.lastName = lastName;
         this.email = email;
+        this.phoneNumber = phoneNumber;
         this.password = password;
         this.authorities = authorities;
     }
 
-    public static ApplicationUser create(Account account, Map<String, Object> attributes) {
-        ApplicationUser applicationUser = ApplicationUser.create(account);
+    public static ApplicationUser create(User user, Map<String, Object> attributes) {
+        ApplicationUser applicationUser = ApplicationUser.create(user);
         applicationUser.setAttributes(attributes);
         return applicationUser;
     }
@@ -80,8 +79,6 @@ public class ApplicationUser implements UserDetails {
     public void setAttributes(Map<String, Object> attributes) {
         this.attributes = attributes;
     }
-
-
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {

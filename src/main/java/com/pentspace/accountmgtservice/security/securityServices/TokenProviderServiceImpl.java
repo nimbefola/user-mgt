@@ -2,6 +2,7 @@ package com.pentspace.accountmgtservice.security.securityServices;
 
 
 import com.pentspace.accountmgtservice.entities.Account;
+import com.pentspace.accountmgtservice.entities.User;
 import io.jsonwebtoken.*;
 import lombok.Data;
 import lombok.var;
@@ -34,7 +35,7 @@ public class TokenProviderServiceImpl implements Serializable, TokenProviderServ
 
 
     @Override
-    public String generateLoginToken(Authentication authentication, Account account) {
+    public String generateLoginToken(Authentication authentication, User user) {
 
         final String authorities = authentication.getAuthorities().stream()
                 .map(GrantedAuthority::getAuthority)

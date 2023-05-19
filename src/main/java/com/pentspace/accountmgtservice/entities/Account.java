@@ -15,17 +15,18 @@ import java.util.Set;
 @AllArgsConstructor(staticName = "build")
 @NoArgsConstructor
 public class Account extends Base{
+
     private String name;
     private String businessName;
     @Email(message = "Please provide a valid Email")
     @Column(unique = true)
     private String email;
     private String username;
-    private String password;
+
     private String pin;
     private String profilePictureUrl;
     private String msisdn;
-   // private String activationOtp; //we have here
+    private String activationOtp;
     @Enumerated(EnumType.STRING)
     private AccountStatus status;
     @Enumerated(EnumType.STRING)
@@ -40,35 +41,6 @@ public class Account extends Base{
     @OneToOne( cascade = CascadeType.ALL)
     private Address address;
     private BigDecimal balance;
-
-    private Boolean locked = false;
-
-    private Boolean enabled = false;
-
-    private String validationToken;
-    private String resetPasswordToken;
-
-    public Account(String name, String businessName, String email, String username, String password, String pin, String profilePictureUrl, String msisdn, AccountStatus status, AccountType accountType, BankDetail bankDetail, Set<Service> services, Address address, BigDecimal balance) {
-        this.name = name;
-        this.businessName = businessName;
-        this.email = email;
-        this.username = username;
-        this.password = password;
-        this.pin = pin;
-        this.profilePictureUrl = profilePictureUrl;
-        this.msisdn = msisdn;
-        this.status = status;
-        this.accountType = accountType;
-        this.bankDetail = bankDetail;
-        this.services = services;
-        this.address = address;
-        this.balance = balance;
-    }
-
-    public Account(String name, String businessName, String email, String username, String hashData, String hashData1, String profilePictureUrl, String msisdn, Object o, AccountStatus active, AccountType accountType, BankDetail bankDetail, Address address, Address address1, BigDecimal zero) {
-        super();
-    }
-
 
     public String getName() {
         return name;
@@ -102,14 +74,6 @@ public class Account extends Base{
         this.username = username;
     }
 
-    public String getPassword() {
-        return password;
-    }
-
-    public void setPassword(String password) {
-        this.password = password;
-    }
-
     public String getPin() {
         return pin;
     }
@@ -132,6 +96,14 @@ public class Account extends Base{
 
     public void setMsisdn(String msisdn) {
         this.msisdn = msisdn;
+    }
+
+    public String getActivationOtp() {
+        return activationOtp;
+    }
+
+    public void setActivationOtp(String activationOtp) {
+        this.activationOtp = activationOtp;
     }
 
     public AccountStatus getStatus() {
@@ -182,36 +154,4 @@ public class Account extends Base{
         this.bankDetail = bankDetail;
     }
 
-    public Boolean getLocked() {
-        return locked;
-    }
-
-    public void setLocked(Boolean locked) {
-        this.locked = locked;
-    }
-
-
-    public Boolean getEnabled() {
-        return enabled;
-    }
-
-    public void setEnabled(Boolean enabled) {
-        this.enabled = enabled;
-    }
-
-    public String getValidationToken() {
-        return validationToken;
-    }
-
-    public void setValidationToken(String validationToken) {
-        this.validationToken = validationToken;
-    }
-
-    public String getResetPasswordToken() {
-        return resetPasswordToken;
-    }
-
-    public void setResetPasswordToken(String resetPasswordToken) {
-        this.resetPasswordToken = resetPasswordToken;
-    }
 }

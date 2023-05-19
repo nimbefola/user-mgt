@@ -3,7 +3,9 @@ package com.pentspace.accountmgtservice.security.securityServices;
 import com.pentspace.accountmgtservice.dto.AccountDTO;
 import com.pentspace.accountmgtservice.dto.LoginDTO;
 import com.pentspace.accountmgtservice.entities.Account;
+import com.pentspace.accountmgtservice.entities.User;
 import com.pentspace.accountmgtservice.entities.repositories.AccountRepository;
+import com.pentspace.accountmgtservice.entities.repositories.UserRepository;
 import com.pentspace.accountmgtservice.exceptions.AuthorizationException;
 import com.pentspace.accountmgtservice.exceptions.GeneralServiceException;
 import com.pentspace.accountmgtservice.exceptions.IncorrectPasswordException;
@@ -24,7 +26,7 @@ import java.util.UUID;
 @Service
 public class UserPrincipalService implements UserDetailsService {
     @Autowired
-    AccountRepository accountRepository;
+    UserRepository userRepository;
 
     @Autowired
     PasswordEncoder passwordEncoder;
@@ -36,28 +38,28 @@ public class UserPrincipalService implements UserDetailsService {
 
 
     @Override
-    public UserDetails loadUserByUsername(String name) throws UsernameNotFoundException {
+    public UserDetails loadUserByUsername(String firstName) throws UsernameNotFoundException {
 
-        Optional<Account> optionalUser = accountRepository.findByEmail(name);
+        Optional<User> optionalUser = userRepository.findUserByEmail(firstName);
         if(!optionalUser.isPresent()){
             throw new UsernameNotFoundException("User with given email not found");
         }
         else{
-            Account account =  optionalUser.get();
-            return ApplicationUser.create(account);
+            User user =  optionalUser.get();
+            return ApplicationUser.create(user);
         }
     }
 
 
     public JWTToken loginUser(LoginDTO loginDTO) throws UsernameNotFoundException, IncorrectPasswordException, GeneralServiceException {
-        Optional<Account> account = accountRepository.findByEmail(loginDTO.getEmail());
+        Optional<User> user = userRepository.findUserByEmail(loginDTO.getEmail());
 
 
-        if(account.isPresent()){
-            if(!account.get().getEnabled()){
+        if(user.isPresent()){
+            if(!user.get().getEnabled()){
                 throw new GeneralServiceException("Account has not been enabled");
             }
-            boolean matchingResult=passwordEncoder.matches(loginDTO.getPassword(), account.get().getPassword());
+            boolean matchingResult=passwordEncoder.matches(loginDTO.getPassword(), user.get().getPassword());
 
             if(!matchingResult){
                 throw new IncorrectPasswordException("The password is Incorrect");
@@ -69,33 +71,33 @@ public class UserPrincipalService implements UserDetailsService {
             );
 
             SecurityContextHolder.getContext().setAuthentication(authentication);
-            account = accountRepository.findByEmail(loginDTO.getEmail());
+            user = userRepository.findUserByEmail(loginDTO.getEmail());
 
-            JWTToken jwtToken = new JWTToken(tokenProviderService.generateLoginToken(authentication, account.get()));
+            JWTToken jwtToken = new JWTToken(tokenProviderService.generateLoginToken(authentication, user.get()));
 
             return jwtToken;
         }
         throw new UsernameNotFoundException("User Not Found");
     }
 
-    public String signUpUser(Account account) {
+    public String signUpUser(User user) {
         StringBuilder stringBuilder= new StringBuilder("Validates ");
-        boolean userExists=accountRepository.findByEmail(account.getEmail()).isPresent();
+        boolean userExists=userRepository.findUserByEmail(user.getEmail()).isPresent();
         if(userExists){
             throw new IllegalStateException("user with this email already exists");
         }
-        accountRepository.save(account);
-        String encodedPassword=passwordEncoder.encode(account.getPassword());
-        account.setPassword(encodedPassword);
+        userRepository.save(user);
+        String encodedPassword=passwordEncoder.encode(user.getPassword());
+        user.setPassword(encodedPassword);
         String token= UUID.randomUUID().toString();
 
         stringBuilder.append(token);
         return stringBuilder.toString();
     }
 
-    public String sendRegistrationToken(Account account){
+    public String sendRegistrationToken(User user){
         //mailsender
-        String token= UUID.randomUUID().toString().replace("-","").substring(0,6);
+        String token= UUID.randomUUID().toString().replace("-","").substring(0,4);
         return token;
     }
 
