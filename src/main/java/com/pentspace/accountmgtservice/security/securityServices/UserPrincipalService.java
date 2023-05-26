@@ -1,10 +1,7 @@
 package com.pentspace.accountmgtservice.security.securityServices;
 
-import com.pentspace.accountmgtservice.dto.AccountDTO;
 import com.pentspace.accountmgtservice.dto.LoginDTO;
-import com.pentspace.accountmgtservice.entities.Account;
 import com.pentspace.accountmgtservice.entities.User;
-import com.pentspace.accountmgtservice.entities.repositories.AccountRepository;
 import com.pentspace.accountmgtservice.entities.repositories.UserRepository;
 import com.pentspace.accountmgtservice.exceptions.AuthorizationException;
 import com.pentspace.accountmgtservice.exceptions.GeneralServiceException;

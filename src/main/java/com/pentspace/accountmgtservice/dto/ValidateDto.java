@@ -1,7 +1,10 @@
 package com.pentspace.accountmgtservice.dto;
 
+import javax.validation.constraints.Email;
+
 public class ValidateDto {
 
+    @Email(message = "Invalid Mail")
     private String email;
 
     private String token;

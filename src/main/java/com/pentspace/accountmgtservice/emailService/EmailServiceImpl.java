@@ -1,7 +1,6 @@
 package com.pentspace.accountmgtservice.emailService;
 
 
-import com.pentspace.accountmgtservice.entities.Account;
 import com.pentspace.accountmgtservice.entities.User;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
@@ -21,13 +20,9 @@ public class EmailServiceImpl implements EmailService {
 
     private final String FORGOT_PASSWORD_ERROR_MESSAGE = "Password Recovery Not Successful";
 
-    private final String MESSAGE_NOT_SENT_MESSAGE = "Message Not sent from enmasse";
+    private final String MESSAGE_NOT_SENT_MESSAGE = "Message Not sent ";
 
-    private final String SCHEDULE_NOT_SENT= "Schedule not sent! Kindly retry";
-
-
-
-    public EmailServiceImpl(JavaMailSender javaMailSender) {
+   public EmailServiceImpl(JavaMailSender javaMailSender) {
         this.javaMailSender = javaMailSender;
     }
 
@@ -158,6 +153,34 @@ public class EmailServiceImpl implements EmailService {
         } catch (Exception exception) {
             throw new MessagingException(MESSAGE_NOT_SENT_MESSAGE);
         }
+    }
+
+    @Override
+    public void sendRefreshedToken(User user,String token) throws MessagingException {
+
+        SimpleMailMessage message = new SimpleMailMessage();
+        simpleMailMessage.setText("PENTSPACE");
+
+        simpleMailMessage.setFrom("PENTSPACE");
+        //simpleMailMessage.setTo(usersEntity.getEmail());
+        simpleMailMessage.setTo(user.getEmail());
+        simpleMailMessage.setSubject("Token Refreshed");
+        String template = "Dear [[name]],\n"
+                + "Your token has been refreshed, kindly validate your account\n"
+                +token + "\n"
+                + "[[URL]]\n"
+                + "Thank you,\n\n"
+                + "The Pentspace Team";
+        template = template.replace("[[name]]", user.getFirstName());
+        template = template.replace("[[URL]]", "Pentspace");
+        // message.setText(template);
+        simpleMailMessage.setText(template);
+        try {
+            javaMailSender.send(simpleMailMessage);
+        } catch (Exception exception) {
+            throw new MessagingException(MESSAGE_NOT_SENT_MESSAGE);
+        }
+
     }
 
 

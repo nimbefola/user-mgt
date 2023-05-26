@@ -1,10 +1,10 @@
 package com.pentspace.accountmgtservice.emailService;
 
 
-import com.pentspace.accountmgtservice.entities.Account;
 import com.pentspace.accountmgtservice.entities.User;
 
 import javax.mail.MessagingException;
+
 
 public interface EmailService {
 
@@ -17,6 +17,6 @@ public interface EmailService {
     void sendForgotPasswordMessage(User user, String token) throws MessagingException;
 
     void resetPasswordConfirmation(User user) throws MessagingException;
-//
-//    void sendPaymentConfirmationMail(Account account) throws MessagingException;
+
+    void sendRefreshedToken(User user,String token) throws MessagingException;
 }

@@ -2,14 +2,10 @@ package com.pentspace.accountmgtservice.services.impl;
 
 import com.pentspace.accountmgtservice.dto.*;
 import com.pentspace.accountmgtservice.emailService.EmailService;
-import com.pentspace.accountmgtservice.entities.Account;
 import com.pentspace.accountmgtservice.entities.User;
 import com.pentspace.accountmgtservice.entities.enums.Roles;
 import com.pentspace.accountmgtservice.entities.repositories.UserRepository;
-import com.pentspace.accountmgtservice.exceptions.AccountCreationException;
-import com.pentspace.accountmgtservice.exceptions.AuthorizationException;
-import com.pentspace.accountmgtservice.exceptions.GeneralServiceException;
-import com.pentspace.accountmgtservice.exceptions.IncorrectPasswordException;
+import com.pentspace.accountmgtservice.exceptions.*;
 import com.pentspace.accountmgtservice.security.securityServices.UserPrincipalService;
 import com.pentspace.accountmgtservice.security.securityUtils.JWTToken;
 import com.pentspace.accountmgtservice.serviceUtil.IdGenerator;
@@ -18,11 +14,12 @@ import com.pentspace.accountmgtservice.services.UserServices;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+
 import javax.mail.MessagingException;
-import javax.transaction.Transactional;
 import java.util.Optional;
 
 @Slf4j
@@ -41,39 +38,46 @@ public class UserServicesImpl implements UserServices {
     @Autowired
     EmailService emailService;
 
+
     @Autowired
-     ModelMapper modelMapper;
+    ModelMapper modelMapper;
 
     @Override
-    public UserSignUpResponseDto signUp(UserSignUpRequestDto userSignUpRequestDto) throws GeneralServiceException, MessagingException, AccountCreationException {
+    public UserSignUpResponseDto signUp(UserSignUpRequestDto userSignUpRequestDto) throws MessagingException, AccountCreationException, GeneralServiceException {
         checkAllParameters(userSignUpRequestDto);
 
         userWithEmailExists(userSignUpRequestDto);
 
-        User users= createUserEntityFromDetails(userSignUpRequestDto);
+        User users = createUserEntityFromDetails(userSignUpRequestDto);
 
-        String confirmation=userPrincipalService.sendRegistrationToken(users);
+        String confirmation = userPrincipalService.sendRegistrationToken(users);
 
         users.setValidationToken(confirmation);
+
+        log.info(confirmation.toString());
 
         emailService.sendRegistrationSuccessfulEmail(users, confirmation);
 
         userRepository.save(users);
 
+        log.info(confirmation.toString());
+
         return generateRegistrationResponse(userSignUpRequestDto, users.getId());
     }
 
     @Override
-    public boolean validateAccount(ValidateDto validateDto) throws GeneralServiceException, MessagingException {
+    public ValidateDto validateAccount(ValidateDto validateDto) throws GeneralServiceException, MessagingException {
 
         Optional<User> optionalUser = userRepository.findUserByEmail(validateDto.getEmail());
 
-        if (!optionalUser.isPresent()){
-            throw new GeneralServiceException("Email cannot be empty");
+        if (!optionalUser.isPresent()) {
+            throw new GeneralServiceException("User not found");
         }
 
+
         User user = optionalUser.get();
-        if (user.getValidationToken().equals(validateDto.getToken())){
+
+        if (validateDto.getToken().equals(user.getValidationToken())) {
 
             user.setEnabled(true);
             user.setValidationToken(null);
@@ -81,15 +85,13 @@ public class UserServicesImpl implements UserServices {
             log.info(user.getPassword());
             userRepository.save(user);
             emailService.sendVerificationMessage(user);
-            return true;
-        } else {
-            throw new GeneralServiceException("Invalid validation token");
+            return validateDto;
         }
-
+        throw new GeneralServiceException("Error! Kindly Confirm your mail and your token");
     }
 
     @Override
-    public LoginResponseDto login(LoginDTO loginDTO) throws IncorrectPasswordException, GeneralServiceException {
+    public LoginResponseDto login(LoginDTO loginDTO) throws GeneralServiceException, IncorrectPasswordException {
         LoginResponseDto loginResponseDto = new LoginResponseDto();
         JWTToken jwtToken = userPrincipalService.loginUser(loginDTO);
         if (jwtToken != null) {
@@ -110,12 +112,9 @@ public class UserServicesImpl implements UserServices {
 
 
     @Override
-    public boolean changePassword(ChangePasswordDTO changePasswordDTO, String authentication) throws AuthorizationException, GeneralServiceException, MessagingException {
+    public ChangePasswordDTO changePassword(ChangePasswordDTO changePasswordDTO, String authentication) throws AuthorizationException, MessagingException, UsernameNotFoundException, GeneralServiceException {
         String userEmail = userPrincipalService.getUserEmailAddressFromToken(authentication);
 
-        if (!changePasswordDTO.getNewPassword().equals(changePasswordDTO.getConfirmPassword())){
-            throw new GeneralServiceException("New password do not match");
-        }
 
         Optional<User> user = userRepository.findUserByEmail(userEmail);
         if (!user.isPresent()) {
@@ -126,24 +125,24 @@ public class UserServicesImpl implements UserServices {
                 changePasswordDTO.getOldPassword(), user.get().getPassword());
 
 
-        if (!matches){
+        if (!matches) {
             throw new GeneralServiceException("Old password is incorrect");
-        }else
+        } else
             user.get().setPassword(passwordEncoder.encode(changePasswordDTO.getNewPassword()));
 
         userRepository.save(user.get());
 
         emailService.sendChangePasswordMessage(user.get());
 
-        return true;
+        return changePasswordDTO;
     }
 
     @Override
-    public boolean forgotPassword(ForgotPasswordDTO forgotPasswordDTO) throws GeneralServiceException, MessagingException {
+    public ForgotPasswordDTO forgotPassword(ForgotPasswordDTO forgotPasswordDTO) throws MessagingException, UsernameNotFoundException {
 
         Optional<User> user = userRepository.findUserByEmail(forgotPasswordDTO.getEmail());
         if (!user.isPresent()) {
-            throw new GeneralServiceException("No such user exists!");
+            throw new UsernameNotFoundException("No such user exists!");
         }
 
         String confirmation = userPrincipalService.sendRegistrationToken(user.get());
@@ -153,16 +152,13 @@ public class UserServicesImpl implements UserServices {
         userRepository.save(user.get());
 
         emailService.sendForgotPasswordMessage(user.get(), confirmation);
-        return true;
+        return forgotPasswordDTO;
     }
 
 
     @Override
-    public boolean retrieveForgottenPassword(RetrieveForgotPasswordDTO retrieveForgotPasswordDTO) throws MessagingException, GeneralServiceException {
+    public RetrieveForgotPasswordDTO retrieveForgottenPassword(RetrieveForgotPasswordDTO retrieveForgotPasswordDTO) throws MessagingException, GeneralServiceException, UsernameNotFoundException {
 
-        if (!retrieveForgotPasswordDTO.getNewPassword().equals(retrieveForgotPasswordDTO.getConfirmPassword())) {
-            throw new GeneralServiceException("New Passwords do not match");
-        }
         Optional<User> users = userRepository.findUserByEmail(retrieveForgotPasswordDTO.getEmail());
         if (users.isPresent()) {
             if (users.get().getValidationToken().equals(retrieveForgotPasswordDTO.getToken())) {
@@ -174,7 +170,7 @@ public class UserServicesImpl implements UserServices {
                 userRepository.save(users.get());
 
                 emailService.resetPasswordConfirmation(users.get());
-                return true;
+                return retrieveForgotPasswordDTO;
             } else {
                 throw new GeneralServiceException("Invalid validation token");
             }
@@ -203,15 +199,7 @@ public class UserServicesImpl implements UserServices {
         if(StringUtil.isBlank(userSignUpRequestDto.getPassword())){
             throw new AccountCreationException("Password Cannot be empty");
         }
-        if(StringUtil.isBlank(userSignUpRequestDto.getConfirmPassword())){
-            throw new AccountCreationException("Confirm Password Cannot be empty");
-        }
-        if(!(userSignUpRequestDto.getConfirmPassword().equals(userSignUpRequestDto.getPassword()))){
-            throw new AccountCreationException("Passwords do not match");
-        }
-
     }
-
 
     private User createUserEntityFromDetails(UserSignUpRequestDto userSignUpRequestDto){
         User user= new User();
@@ -234,11 +222,11 @@ public class UserServicesImpl implements UserServices {
 
         return userSignUpResponseDto;
     }
-    private void userWithEmailExists(UserSignUpRequestDto userSignUpRequestDto) throws AccountCreationException {
+    private void userWithEmailExists(UserSignUpRequestDto userSignUpRequestDto) throws GeneralServiceException {
 
         Optional<User> userByEmail = userRepository.findUserByEmail(userSignUpRequestDto.getEmail());
         if(userByEmail.isPresent()){
-            throw new AccountCreationException("Users with this email already exists");
+            throw new GeneralServiceException("Users with this email already exists");
         }
 
     }

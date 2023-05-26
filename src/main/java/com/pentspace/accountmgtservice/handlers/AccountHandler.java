@@ -5,12 +5,8 @@ import com.pentspace.accountmgtservice.entities.Account;
 import com.pentspace.accountmgtservice.entities.enums.AccountStatus;
 import com.pentspace.accountmgtservice.exceptions.AccountCreationException;
 import com.pentspace.accountmgtservice.exceptions.AuthorizationException;
-import com.pentspace.accountmgtservice.exceptions.GeneralServiceException;
-import com.pentspace.accountmgtservice.exceptions.IncorrectPasswordException;
 import org.springframework.web.multipart.MultipartFile;
 
-import javax.mail.MessagingException;
-import java.math.BigDecimal;
 import java.util.List;
 
 public interface AccountHandler {

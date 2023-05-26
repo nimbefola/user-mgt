@@ -32,8 +32,6 @@ import static com.pentspace.accountmgtservice.security.securityUtils.SecurityCon
 @Configuration
 public class TokenProviderServiceImpl implements Serializable, TokenProviderService {
 
-
-
     @Override
     public String generateLoginToken(Authentication authentication, User user) {
 

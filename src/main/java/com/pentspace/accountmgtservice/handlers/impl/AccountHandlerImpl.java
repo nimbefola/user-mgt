@@ -4,7 +4,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.pentspace.accountmgtservice.clients.PaystackServiceClient;
 import com.pentspace.accountmgtservice.clients.TransactionServiceClient;
 import com.pentspace.accountmgtservice.dto.*;
-import com.pentspace.accountmgtservice.emailService.EmailService;
 import com.pentspace.accountmgtservice.entities.*;
 import com.pentspace.accountmgtservice.entities.enums.AccountStatus;
 import com.pentspace.accountmgtservice.entities.enums.TransactionSource;
@@ -12,28 +11,20 @@ import com.pentspace.accountmgtservice.entities.enums.TransactionStatus;
 import com.pentspace.accountmgtservice.entities.repositories.AccountRepository;
 import com.pentspace.accountmgtservice.exceptions.AccountCreationException;
 import com.pentspace.accountmgtservice.exceptions.AuthorizationException;
-import com.pentspace.accountmgtservice.exceptions.GeneralServiceException;
-import com.pentspace.accountmgtservice.exceptions.IncorrectPasswordException;
 import com.pentspace.accountmgtservice.handlers.AccountHandler;
 import com.pentspace.accountmgtservice.handlers.BaseHandler;
 import com.pentspace.accountmgtservice.handlers.HashManagerHandler;
-import com.pentspace.accountmgtservice.security.securityServices.UserPrincipalService;
-import com.pentspace.accountmgtservice.security.securityUtils.JWTToken;
 import com.pentspace.accountmgtservice.services.AccountService;
 import com.pentspace.accountmgtservice.services.BankService;
 import com.pentspace.accountmgtservice.services.FileUploadService;
 import com.pentspace.accountmgtservice.services.ServiceService;
 import com.pentspace.accountmgtservice.entities.enums.TransactionType;
 import lombok.extern.slf4j.Slf4j;
-import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 import org.springframework.web.multipart.MultipartFile;
 
-import javax.mail.MessagingException;
 import java.math.BigDecimal;
-import java.time.Instant;
 import java.util.*;
 
 

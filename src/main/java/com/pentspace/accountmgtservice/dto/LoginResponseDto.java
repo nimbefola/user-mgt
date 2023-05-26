@@ -35,6 +35,5 @@ public class LoginResponseDto {
 
     private String email;
 
-    private Roles role;
     private JWTToken token;
 }

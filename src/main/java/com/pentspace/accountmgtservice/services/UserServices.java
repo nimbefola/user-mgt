@@ -1,26 +1,24 @@
 package com.pentspace.accountmgtservice.services;
 
 import com.pentspace.accountmgtservice.dto.*;
-import com.pentspace.accountmgtservice.entities.User;
-import com.pentspace.accountmgtservice.exceptions.AccountCreationException;
-import com.pentspace.accountmgtservice.exceptions.AuthorizationException;
-import com.pentspace.accountmgtservice.exceptions.GeneralServiceException;
-import com.pentspace.accountmgtservice.exceptions.IncorrectPasswordException;
+import com.pentspace.accountmgtservice.exceptions.*;
 
 import javax.mail.MessagingException;
+
 
 public interface UserServices {
 
    UserSignUpResponseDto signUp(UserSignUpRequestDto userSignUpRequestDto) throws MessagingException, GeneralServiceException, AccountCreationException;
 
-    boolean validateAccount(ValidateDto validateDto) throws GeneralServiceException, MessagingException;
+    ValidateDto validateAccount(ValidateDto validateDto) throws GeneralServiceException, MessagingException;
 
-    LoginResponseDto login(LoginDTO loginDTO) throws IncorrectPasswordException, GeneralServiceException;
+    LoginResponseDto login(LoginDTO loginDTO) throws GeneralServiceException, IncorrectPasswordException;
 
-    boolean changePassword(ChangePasswordDTO changePasswordDTO, String authentication) throws AuthorizationException, GeneralServiceException, MessagingException;
+    ChangePasswordDTO changePassword(ChangePasswordDTO changePasswordDTO, String authentication) throws AuthorizationException, GeneralServiceException, MessagingException;
 
-    boolean forgotPassword(ForgotPasswordDTO forgotPasswordDTO) throws GeneralServiceException, MessagingException;
+    ForgotPasswordDTO forgotPassword(ForgotPasswordDTO forgotPasswordDTO) throws GeneralServiceException, MessagingException;
 
-    boolean retrieveForgottenPassword(RetrieveForgotPasswordDTO retrieveForgotPasswordDTO) throws MessagingException, GeneralServiceException;
+    RetrieveForgotPasswordDTO retrieveForgottenPassword(RetrieveForgotPasswordDTO retrieveForgotPasswordDTO) throws MessagingException, GeneralServiceException;
+
 
 }

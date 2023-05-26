@@ -20,7 +20,7 @@ public class User {
     @Column
     private String lastName;
 
-    @Email
+
     private String email;
 
     @Column
@@ -28,9 +28,6 @@ public class User {
 
     @Column
     private String phoneNumber;
-
-    @Transient
-    private String confirmPassword;
 
     @Column
     private String country;
@@ -106,14 +103,6 @@ public class User {
 
     public void setPhoneNumber(String phoneNumber) {
         this.phoneNumber = phoneNumber;
-    }
-
-    public String getConfirmPassword() {
-        return confirmPassword;
-    }
-
-    public void setConfirmPassword(String confirmPassword) {
-        this.confirmPassword = confirmPassword;
     }
 
     public Boolean getLocked() {
