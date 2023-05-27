@@ -68,26 +68,26 @@ public class UserServicesImpl implements UserServices {
     @Override
     public ValidateDto validateAccount(ValidateDto validateDto) throws GeneralServiceException, MessagingException {
 
-        Optional<User> optionalUser = userRepository.findUserByEmail(validateDto.getEmail());
-
-        if (!optionalUser.isPresent()) {
-            throw new GeneralServiceException("User not found");
+        if(StringUtil.isBlank(validateDto.getEmail())){
+            throw new GeneralServiceException("Email Cannot be empty");
         }
 
+        Optional<User> users = userRepository.findUserByEmail(validateDto.getEmail());
 
-        User user = optionalUser.get();
-
-        if (validateDto.getToken().equals(user.getValidationToken())) {
-
-            user.setEnabled(true);
-            user.setValidationToken(null);
-
-            log.info(user.getPassword());
-            userRepository.save(user);
-            emailService.sendVerificationMessage(user);
-            return validateDto;
+        if (!users.isPresent()){
+            throw new GeneralServiceException("User With this email does not exist");
         }
-        throw new GeneralServiceException("Error! Kindly Confirm your mail and your token");
+
+            if (users.get().getValidationToken().equals(validateDto.getToken())) {
+                users.get().setEnabled(true);
+                users.get().setValidationToken(null + "Token not valid or already used");
+
+                userRepository.save(users.get());
+
+                return validateDto;
+            } else {
+                throw new GeneralServiceException("Invalid Request! Kindly Confirm your inputs");
+            }
     }
 
     @Override
@@ -159,11 +159,18 @@ public class UserServicesImpl implements UserServices {
     @Override
     public RetrieveForgotPasswordDTO retrieveForgottenPassword(RetrieveForgotPasswordDTO retrieveForgotPasswordDTO) throws MessagingException, GeneralServiceException, UsernameNotFoundException {
 
+        if(StringUtil.isBlank(retrieveForgotPasswordDTO.getEmail())){
+            throw new GeneralServiceException("Email Cannot be empty");
+        }
+
         Optional<User> users = userRepository.findUserByEmail(retrieveForgotPasswordDTO.getEmail());
-        if (users.isPresent()) {
+        if (!users.isPresent()) {
+            throw new GeneralServiceException("User With this email does not exist");
+        }
+
             if (users.get().getValidationToken().equals(retrieveForgotPasswordDTO.getToken())) {
                 users.get().setEnabled(true);
-                users.get().setValidationToken(null);
+                users.get().setValidationToken(null + "Token not valid or already used");
 
                 users.get().setPassword(passwordEncoder.encode(retrieveForgotPasswordDTO.getNewPassword()));
 
@@ -172,12 +179,9 @@ public class UserServicesImpl implements UserServices {
                 emailService.resetPasswordConfirmation(users.get());
                 return retrieveForgotPasswordDTO;
             } else {
-                throw new GeneralServiceException("Invalid validation token");
+                throw new GeneralServiceException("Invalid Request! Kindly Confirm your inputs");
             }
         }
-        throw new GeneralServiceException("User With this email does not exist");
-    }
-
 
     private void checkAllParameters(UserSignUpRequestDto userSignUpRequestDto) throws AccountCreationException {
 
