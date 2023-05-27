@@ -16,6 +16,7 @@ import javax.mail.MessagingException;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 
 @RestControllerAdvice
@@ -29,21 +30,21 @@ public class CustomizedResponseEntityHandler extends ResponseEntityExceptionHand
         }
 
     @ExceptionHandler(MessagingException.class)
-    public final ResponseEntity<ApiErrorResponse> handleAllExceptions(MessagingException messagingException) {
+    public final ResponseEntity<ApiErrorResponse> handleMessagingExceptions(MessagingException messagingException) {
         ApiErrorResponse apiErrorResponse = new ApiErrorResponse(messagingException.getMessage(),HttpStatus.BAD_REQUEST);
 
         return new ResponseEntity<>(apiErrorResponse, HttpStatus.BAD_REQUEST);
     }
 
         @ExceptionHandler(AuthorizationException.class)
-        public final ResponseEntity<ApiErrorResponse> handleUserNotFoundException(AuthorizationException authorizationException) {
+        public final ResponseEntity<ApiErrorResponse> handleAuthorizationException(AuthorizationException authorizationException) {
             ApiErrorResponse apiErrorResponse = new ApiErrorResponse(authorizationException.getMessage(),HttpStatus.UNAUTHORIZED);
 
             return new ResponseEntity<>(apiErrorResponse, HttpStatus.UNAUTHORIZED);
         }
 
     @ExceptionHandler(GeneralServiceException.class)
-    public final ResponseEntity<ApiErrorResponse> handleUserNotFoundException(GeneralServiceException generalServiceException,
+    public final ResponseEntity<ApiErrorResponse> handleGeneralException(GeneralServiceException generalServiceException,
                                                                               WebRequest request) {
         ApiErrorResponse apiErrorResponse = new ApiErrorResponse(generalServiceException.getMessage(),HttpStatus.BAD_REQUEST);
 
@@ -53,7 +54,7 @@ public class CustomizedResponseEntityHandler extends ResponseEntityExceptionHand
 
 
     @ExceptionHandler(AccountCreationException.class)
-    public final ResponseEntity<ApiErrorResponse> handleUserNotFoundException(AccountCreationException accountCreationException) {
+    public final ResponseEntity<ApiErrorResponse> handleAccountCreationException(AccountCreationException accountCreationException) {
         ApiErrorResponse apiErrorResponse = new ApiErrorResponse(accountCreationException.getMessage(),HttpStatus.BAD_REQUEST);
 
         return new ResponseEntity<>(apiErrorResponse, HttpStatus.BAD_REQUEST);
@@ -62,7 +63,7 @@ public class CustomizedResponseEntityHandler extends ResponseEntityExceptionHand
 
 
     @ExceptionHandler(UsernameNotFoundException.class)
-    public final ResponseEntity<ApiErrorResponse> handleUserNotFoundException(UsernameNotFoundException usernameNotFoundException
+    public final ResponseEntity<ApiErrorResponse> handleUsernameNotFoundException(UsernameNotFoundException usernameNotFoundException
                                                                               ) {
         ApiErrorResponse apiErrorResponse = new ApiErrorResponse(usernameNotFoundException.getMessage(),HttpStatus.NOT_FOUND);
 
@@ -70,7 +71,7 @@ public class CustomizedResponseEntityHandler extends ResponseEntityExceptionHand
     }
 
     @ExceptionHandler(IncorrectPasswordException.class)
-    public final ResponseEntity<ApiErrorResponse> handleUserNotFoundException(IncorrectPasswordException incorrectPasswordException) {
+    public final ResponseEntity<ApiErrorResponse> handleIncorrectPasswordException(IncorrectPasswordException incorrectPasswordException) {
         ApiErrorResponse apiErrorResponse = new ApiErrorResponse(incorrectPasswordException.getMessage(),HttpStatus.BAD_REQUEST);
 
         return new ResponseEntity<>(apiErrorResponse, HttpStatus.BAD_REQUEST);
@@ -78,12 +79,14 @@ public class CustomizedResponseEntityHandler extends ResponseEntityExceptionHand
 
     @Override
     protected ResponseEntity<Object> handleMethodArgumentNotValid(MethodArgumentNotValidException ex, HttpHeaders headers, HttpStatus status, WebRequest request) {
-        List<String> details = new ArrayList<>();
-        for(ObjectError error : ex.getBindingResult().getAllErrors()) {
-            details.add(error.getDefaultMessage());
-        }
-        ApiErrorResponse error = new ApiErrorResponse("Validation Failed",HttpStatus.BAD_REQUEST );
-        return new ResponseEntity(error, HttpStatus.BAD_REQUEST);
+        List<String> errorList = ex
+                .getBindingResult()
+                .getFieldErrors()
+                .stream()
+                .map(fieldError -> fieldError.getDefaultMessage())
+                .collect(Collectors.toList());
+        ApiErrorResponse errorDetails = new ApiErrorResponse( ex.getLocalizedMessage(),HttpStatus.BAD_REQUEST, errorList);
+        return handleExceptionInternal(ex, errorDetails, headers, errorDetails.getStatus(), request);
     }
 
 }

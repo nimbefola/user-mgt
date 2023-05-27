@@ -79,16 +79,17 @@ public class UserServicesImpl implements UserServices {
         }
 
             if (users.get().getValidationToken().equals(validateDto.getToken())) {
+                log.info("its working");
                 users.get().setEnabled(true);
-                users.get().setValidationToken(null + "Token not valid or already used");
+                users.get().setValidationToken(null );
 
                 userRepository.save(users.get());
 
                 return validateDto;
-            } else {
-                throw new GeneralServiceException("Invalid Request! Kindly Confirm your inputs");
             }
-    }
+                throw new GeneralServiceException("Token not valid or already used");
+            }
+
 
     @Override
     public LoginResponseDto login(LoginDTO loginDTO) throws GeneralServiceException, IncorrectPasswordException {
@@ -170,7 +171,7 @@ public class UserServicesImpl implements UserServices {
 
             if (users.get().getValidationToken().equals(retrieveForgotPasswordDTO.getToken())) {
                 users.get().setEnabled(true);
-                users.get().setValidationToken(null + "Token not valid or already used");
+                users.get().setValidationToken(null);
 
                 users.get().setPassword(passwordEncoder.encode(retrieveForgotPasswordDTO.getNewPassword()));
 
@@ -178,10 +179,10 @@ public class UserServicesImpl implements UserServices {
 
                 emailService.resetPasswordConfirmation(users.get());
                 return retrieveForgotPasswordDTO;
-            } else {
-                throw new GeneralServiceException("Invalid Request! Kindly Confirm your inputs");
             }
-        }
+                throw new GeneralServiceException("Token not valid or already used");
+            }
+
 
     private void checkAllParameters(UserSignUpRequestDto userSignUpRequestDto) throws AccountCreationException {
 

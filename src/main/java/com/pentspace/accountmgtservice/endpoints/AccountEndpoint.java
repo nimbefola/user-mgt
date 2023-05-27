@@ -38,6 +38,7 @@ public class AccountEndpoint {
             UserSignUpResponseDto result = userServices.signUp(request);
              return  ApiSuccessResponse.generateResponse("Successfully created user",HttpStatus.OK,result);
 
+        //return new ResponseEntity<>(userServices.signUp(request),HttpStatus.OK);
     }
 
     @PostMapping(path = "/validate")
