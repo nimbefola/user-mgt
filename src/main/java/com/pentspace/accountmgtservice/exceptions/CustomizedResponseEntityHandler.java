@@ -24,21 +24,24 @@ public class CustomizedResponseEntityHandler extends ResponseEntityExceptionHand
 
         @ExceptionHandler(Exception.class)
         public final ResponseEntity<ApiErrorResponse> handleAllExceptions(Exception exception) {
-            ApiErrorResponse apiErrorResponse = new ApiErrorResponse(exception.getMessage(),HttpStatus.INTERNAL_SERVER_ERROR);
+            System.out.println(exception.getCause().getMessage());
+            ApiErrorResponse apiErrorResponse = new ApiErrorResponse(HttpStatus.INTERNAL_SERVER_ERROR,"error");
 
             return new ResponseEntity<>(apiErrorResponse, HttpStatus.INTERNAL_SERVER_ERROR);
         }
 
     @ExceptionHandler(MessagingException.class)
     public final ResponseEntity<ApiErrorResponse> handleMessagingExceptions(MessagingException messagingException) {
-        ApiErrorResponse apiErrorResponse = new ApiErrorResponse(messagingException.getMessage(),HttpStatus.BAD_REQUEST);
+        System.out.println(messagingException.getCause().getMessage());
+        ApiErrorResponse apiErrorResponse = new ApiErrorResponse(HttpStatus.BAD_REQUEST,"error");
 
         return new ResponseEntity<>(apiErrorResponse, HttpStatus.BAD_REQUEST);
     }
 
         @ExceptionHandler(AuthorizationException.class)
         public final ResponseEntity<ApiErrorResponse> handleAuthorizationException(AuthorizationException authorizationException) {
-            ApiErrorResponse apiErrorResponse = new ApiErrorResponse(authorizationException.getMessage(),HttpStatus.UNAUTHORIZED);
+            System.out.println(authorizationException.getCause().getMessage());
+            ApiErrorResponse apiErrorResponse = new ApiErrorResponse(HttpStatus.UNAUTHORIZED,"error");
 
             return new ResponseEntity<>(apiErrorResponse, HttpStatus.UNAUTHORIZED);
         }
@@ -46,7 +49,8 @@ public class CustomizedResponseEntityHandler extends ResponseEntityExceptionHand
     @ExceptionHandler(GeneralServiceException.class)
     public final ResponseEntity<ApiErrorResponse> handleGeneralException(GeneralServiceException generalServiceException,
                                                                               WebRequest request) {
-        ApiErrorResponse apiErrorResponse = new ApiErrorResponse(generalServiceException.getMessage(),HttpStatus.BAD_REQUEST);
+       // System.out.println("Error messages "+ generalServiceException. );
+        ApiErrorResponse apiErrorResponse = new ApiErrorResponse(HttpStatus.BAD_REQUEST,"error");
 
         return new ResponseEntity<>(apiErrorResponse, HttpStatus.BAD_REQUEST);
     }
@@ -55,7 +59,8 @@ public class CustomizedResponseEntityHandler extends ResponseEntityExceptionHand
 
     @ExceptionHandler(AccountCreationException.class)
     public final ResponseEntity<ApiErrorResponse> handleAccountCreationException(AccountCreationException accountCreationException) {
-        ApiErrorResponse apiErrorResponse = new ApiErrorResponse(accountCreationException.getMessage(),HttpStatus.BAD_REQUEST);
+        System.out.println(accountCreationException.getCause().getMessage());
+        ApiErrorResponse apiErrorResponse = new ApiErrorResponse(HttpStatus.BAD_REQUEST,"error");
 
         return new ResponseEntity<>(apiErrorResponse, HttpStatus.BAD_REQUEST);
     }
@@ -65,28 +70,31 @@ public class CustomizedResponseEntityHandler extends ResponseEntityExceptionHand
     @ExceptionHandler(UsernameNotFoundException.class)
     public final ResponseEntity<ApiErrorResponse> handleUsernameNotFoundException(UsernameNotFoundException usernameNotFoundException
                                                                               ) {
-        ApiErrorResponse apiErrorResponse = new ApiErrorResponse(usernameNotFoundException.getMessage(),HttpStatus.NOT_FOUND);
+        System.out.println(usernameNotFoundException.getCause().getMessage());
+        ApiErrorResponse apiErrorResponse = new ApiErrorResponse(HttpStatus.NOT_FOUND,"error");
 
         return new ResponseEntity<>(apiErrorResponse, HttpStatus.NOT_FOUND);
     }
 
     @ExceptionHandler(IncorrectPasswordException.class)
     public final ResponseEntity<ApiErrorResponse> handleIncorrectPasswordException(IncorrectPasswordException incorrectPasswordException) {
-        ApiErrorResponse apiErrorResponse = new ApiErrorResponse(incorrectPasswordException.getMessage(),HttpStatus.BAD_REQUEST);
+        System.out.println(incorrectPasswordException.getCause().getMessage());
+        ApiErrorResponse apiErrorResponse = new ApiErrorResponse(HttpStatus.BAD_REQUEST,"error");
 
         return new ResponseEntity<>(apiErrorResponse, HttpStatus.BAD_REQUEST);
     }
 
     @Override
     protected ResponseEntity<Object> handleMethodArgumentNotValid(MethodArgumentNotValidException ex, HttpHeaders headers, HttpStatus status, WebRequest request) {
+        System.out.println(ex.getCause().getMessage());
         List<String> errorList = ex
                 .getBindingResult()
                 .getFieldErrors()
                 .stream()
                 .map(fieldError -> fieldError.getDefaultMessage())
                 .collect(Collectors.toList());
-        ApiErrorResponse errorDetails = new ApiErrorResponse( ex.getLocalizedMessage(),HttpStatus.BAD_REQUEST, errorList);
-        return handleExceptionInternal(ex, errorDetails, headers, errorDetails.getStatus(), request);
+        ApiErrorResponse errorDetails = new ApiErrorResponse( HttpStatus.BAD_REQUEST,"error", errorList);
+        return handleExceptionInternal(ex, errorDetails, headers, errorDetails.getMessage(), request);
     }
 
 }

@@ -11,26 +11,26 @@ import java.util.List;
 @RequiredArgsConstructor
 public class ApiErrorResponse {
 
-        private String message;
+        private HttpStatus message;
 
-    private HttpStatus status;
+        private String status;
         private List<String> errors;
 
-        public ApiErrorResponse( String message,HttpStatus status, List<String> errors) {
+        public ApiErrorResponse(HttpStatus message,String status, List<String> errors) {
             super();
             this.status = status;
             this.message = message;
             this.errors = errors;
         }
 
-        public ApiErrorResponse( String message,HttpStatus status, String error) {
+        public ApiErrorResponse( HttpStatus message,String status, String error) {
             super();
             this.status = status;
             this.message = message;
             errors = Arrays.asList(error);
         }
 
-    public ApiErrorResponse( String message,HttpStatus status) {
+    public ApiErrorResponse(HttpStatus message,String status) {
         super();
         this.status = status;
         this.message = message;
