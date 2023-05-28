@@ -13,40 +13,27 @@ public class User {
 
     @Id
     private String id;
-
     @Column
     private String firstName;
-
     @Column
     private String lastName;
-
-
     private String email;
-
     @Column
     private String password;
-
     @Column
     private String phoneNumber;
-
     @Column
     private String country;
-
     @Enumerated
     private Roles roles;
-
     @Column
     private Boolean locked = false;
-
     @Column
     private Boolean enabled = false;
-
     @Column
     private String validationToken;
-
     @Column
     private String resetPasswordToken;
-
 
     public String getId() {
         return id;

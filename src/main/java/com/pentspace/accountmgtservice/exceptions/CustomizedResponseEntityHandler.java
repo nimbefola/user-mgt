@@ -8,6 +8,7 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.validation.ObjectError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
@@ -15,7 +16,9 @@ import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExcep
 import javax.mail.MessagingException;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 
@@ -24,7 +27,6 @@ public class CustomizedResponseEntityHandler extends ResponseEntityExceptionHand
 
         @ExceptionHandler(Exception.class)
         public final ResponseEntity<ApiErrorResponse> handleAllExceptions(Exception exception) {
-            System.out.println(exception.getCause().getMessage());
             ApiErrorResponse apiErrorResponse = new ApiErrorResponse(HttpStatus.INTERNAL_SERVER_ERROR,"error");
 
             return new ResponseEntity<>(apiErrorResponse, HttpStatus.INTERNAL_SERVER_ERROR);
@@ -32,7 +34,6 @@ public class CustomizedResponseEntityHandler extends ResponseEntityExceptionHand
 
     @ExceptionHandler(MessagingException.class)
     public final ResponseEntity<ApiErrorResponse> handleMessagingExceptions(MessagingException messagingException) {
-        System.out.println(messagingException.getCause().getMessage());
         ApiErrorResponse apiErrorResponse = new ApiErrorResponse(HttpStatus.BAD_REQUEST,"error");
 
         return new ResponseEntity<>(apiErrorResponse, HttpStatus.BAD_REQUEST);
@@ -40,7 +41,6 @@ public class CustomizedResponseEntityHandler extends ResponseEntityExceptionHand
 
         @ExceptionHandler(AuthorizationException.class)
         public final ResponseEntity<ApiErrorResponse> handleAuthorizationException(AuthorizationException authorizationException) {
-            System.out.println(authorizationException.getCause().getMessage());
             ApiErrorResponse apiErrorResponse = new ApiErrorResponse(HttpStatus.UNAUTHORIZED,"error");
 
             return new ResponseEntity<>(apiErrorResponse, HttpStatus.UNAUTHORIZED);
@@ -59,7 +59,6 @@ public class CustomizedResponseEntityHandler extends ResponseEntityExceptionHand
 
     @ExceptionHandler(AccountCreationException.class)
     public final ResponseEntity<ApiErrorResponse> handleAccountCreationException(AccountCreationException accountCreationException) {
-        System.out.println(accountCreationException.getCause().getMessage());
         ApiErrorResponse apiErrorResponse = new ApiErrorResponse(HttpStatus.BAD_REQUEST,"error");
 
         return new ResponseEntity<>(apiErrorResponse, HttpStatus.BAD_REQUEST);
@@ -70,7 +69,6 @@ public class CustomizedResponseEntityHandler extends ResponseEntityExceptionHand
     @ExceptionHandler(UsernameNotFoundException.class)
     public final ResponseEntity<ApiErrorResponse> handleUsernameNotFoundException(UsernameNotFoundException usernameNotFoundException
                                                                               ) {
-        System.out.println(usernameNotFoundException.getCause().getMessage());
         ApiErrorResponse apiErrorResponse = new ApiErrorResponse(HttpStatus.NOT_FOUND,"error");
 
         return new ResponseEntity<>(apiErrorResponse, HttpStatus.NOT_FOUND);
@@ -78,15 +76,14 @@ public class CustomizedResponseEntityHandler extends ResponseEntityExceptionHand
 
     @ExceptionHandler(IncorrectPasswordException.class)
     public final ResponseEntity<ApiErrorResponse> handleIncorrectPasswordException(IncorrectPasswordException incorrectPasswordException) {
-        System.out.println(incorrectPasswordException.getCause().getMessage());
+
         ApiErrorResponse apiErrorResponse = new ApiErrorResponse(HttpStatus.BAD_REQUEST,"error");
 
         return new ResponseEntity<>(apiErrorResponse, HttpStatus.BAD_REQUEST);
     }
 
-    @Override
+    @Override  // handleMethodArgumentNotValid
     protected ResponseEntity<Object> handleMethodArgumentNotValid(MethodArgumentNotValidException ex, HttpHeaders headers, HttpStatus status, WebRequest request) {
-        System.out.println(ex.getCause().getMessage());
         List<String> errorList = ex
                 .getBindingResult()
                 .getFieldErrors()
@@ -96,5 +93,15 @@ public class CustomizedResponseEntityHandler extends ResponseEntityExceptionHand
         ApiErrorResponse errorDetails = new ApiErrorResponse( HttpStatus.BAD_REQUEST,"error", errorList);
         return handleExceptionInternal(ex, errorDetails, headers, errorDetails.getMessage(), request);
     }
+
+//    @ResponseStatus(HttpStatus.BAD_REQUEST)
+//    @ExceptionHandler(MethodArgumentNotValidException.class)
+//    public Map<String, String> handleException(MethodArgumentNotValidException exception){
+//        Map<String, String> errorMap = new HashMap<>();
+//        exception.getBindingResult().getFieldErrors().forEach(error ->{
+//            errorMap.put(error.getField(), error.getDefaultMessage());
+//        } );
+//        return errorMap;
+//    }
 
 }

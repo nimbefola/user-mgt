@@ -7,7 +7,7 @@ import com.pentspace.accountmgtservice.entities.enums.AccountType;
 import com.pentspace.accountmgtservice.entities.enums.Roles;
 import com.pentspace.accountmgtservice.entities.repositories.AccountRepository;
 import com.pentspace.accountmgtservice.entities.repositories.UserRepository;
-import com.pentspace.accountmgtservice.exceptions.ApplicationExceptionHandler;
+//import com.pentspace.accountmgtservice.exceptions.ApplicationExceptionHandler;
 import com.pentspace.accountmgtservice.exceptions.AuthorizationException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
