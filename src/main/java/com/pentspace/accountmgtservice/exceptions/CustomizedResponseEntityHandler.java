@@ -23,7 +23,7 @@ import java.util.stream.Collectors;
 
 
 @RestControllerAdvice
-public class CustomizedResponseEntityHandler extends ResponseEntityExceptionHandler {
+public class CustomizedResponseEntityHandler  {
 
         @ExceptionHandler(Exception.class)
         public final ResponseEntity<ApiErrorResponse> handleAllExceptions(Exception exception) {
