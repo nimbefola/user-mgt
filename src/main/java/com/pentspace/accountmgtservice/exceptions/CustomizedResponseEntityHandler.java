@@ -26,22 +26,22 @@ import java.util.stream.Collectors;
 public class CustomizedResponseEntityHandler extends ResponseEntityExceptionHandler {
 
         @ExceptionHandler(Exception.class)
-        public final ResponseEntity<ApiErrorResponse> handleAllExceptions(Exception exception) {
-            ApiErrorResponse apiErrorResponse = new ApiErrorResponse(exception.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR,"error");
+        public final ResponseEntity<ApiErrorResponse> handleAllExceptions(Exception exception,WebRequest webRequest) {
+            ApiErrorResponse apiErrorResponse = new ApiErrorResponse(exception.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR,webRequest.getDescription(false));
 
             return new ResponseEntity<>(apiErrorResponse, HttpStatus.INTERNAL_SERVER_ERROR);
         }
 
     @ExceptionHandler(MessagingException.class)
-    public final ResponseEntity<ApiErrorResponse> handleMessagingExceptions(MessagingException messagingException) {
-        ApiErrorResponse apiErrorResponse = new ApiErrorResponse(messagingException.getMessage(), HttpStatus.BAD_REQUEST,"error");
+    public final ResponseEntity<ApiErrorResponse> handleMessagingExceptions(MessagingException messagingException,WebRequest request) {
+        ApiErrorResponse apiErrorResponse = new ApiErrorResponse(messagingException.getMessage(), HttpStatus.BAD_REQUEST,request.getDescription(false));
 
         return new ResponseEntity<>(apiErrorResponse, HttpStatus.BAD_REQUEST);
     }
 
         @ExceptionHandler(AuthorizationException.class)
-        public final ResponseEntity<ApiErrorResponse> handleAuthorizationException(AuthorizationException authorizationException) {
-            ApiErrorResponse apiErrorResponse = new ApiErrorResponse(authorizationException.getMessage(),HttpStatus.UNAUTHORIZED,"error");
+        public final ResponseEntity<ApiErrorResponse> handleAuthorizationException(AuthorizationException authorizationException,WebRequest request) {
+            ApiErrorResponse apiErrorResponse = new ApiErrorResponse(authorizationException.getMessage(),HttpStatus.UNAUTHORIZED,request.getDescription(false));
 
             return new ResponseEntity<>(apiErrorResponse, HttpStatus.UNAUTHORIZED);
         }
@@ -50,7 +50,7 @@ public class CustomizedResponseEntityHandler extends ResponseEntityExceptionHand
     public final ResponseEntity<ApiErrorResponse> handleGeneralException(GeneralServiceException generalServiceException,
                                                                               WebRequest request) {
        // System.out.println("Error messages "+ generalServiceException. );
-        ApiErrorResponse apiErrorResponse = new ApiErrorResponse(generalServiceException.getMessage(),HttpStatus.BAD_REQUEST,"error");
+        ApiErrorResponse apiErrorResponse = new ApiErrorResponse(generalServiceException.getMessage(),HttpStatus.BAD_REQUEST,request.getDescription(false));
 
         return new ResponseEntity<>(apiErrorResponse, HttpStatus.BAD_REQUEST);
     }
@@ -58,8 +58,8 @@ public class CustomizedResponseEntityHandler extends ResponseEntityExceptionHand
 
 
     @ExceptionHandler(AccountCreationException.class)
-    public final ResponseEntity<ApiErrorResponse> handleAccountCreationException(AccountCreationException accountCreationException) {
-        ApiErrorResponse apiErrorResponse = new ApiErrorResponse(accountCreationException.getMessage(), HttpStatus.BAD_REQUEST,"error");
+    public final ResponseEntity<ApiErrorResponse> handleAccountCreationException(AccountCreationException accountCreationException,WebRequest request) {
+        ApiErrorResponse apiErrorResponse = new ApiErrorResponse(accountCreationException.getMessage(), HttpStatus.BAD_REQUEST,request.getDescription(false));
 
         return new ResponseEntity<>(apiErrorResponse, HttpStatus.BAD_REQUEST);
     }
@@ -67,17 +67,17 @@ public class CustomizedResponseEntityHandler extends ResponseEntityExceptionHand
 
 
     @ExceptionHandler(UsernameNotFoundException.class)
-    public final ResponseEntity<ApiErrorResponse> handleUsernameNotFoundException(UsernameNotFoundException usernameNotFoundException
-                                                                              ) {
-        ApiErrorResponse apiErrorResponse = new ApiErrorResponse(usernameNotFoundException.getMessage(), HttpStatus.NOT_FOUND,"error");
+    public final ResponseEntity<ApiErrorResponse> handleUsernameNotFoundException(UsernameNotFoundException usernameNotFoundException,
+                                                                            WebRequest webRequest  ) {
+        ApiErrorResponse apiErrorResponse = new ApiErrorResponse(usernameNotFoundException.getMessage(), HttpStatus.NOT_FOUND,webRequest.getDescription(false));
 
         return new ResponseEntity<>(apiErrorResponse, HttpStatus.NOT_FOUND);
     }
 
     @ExceptionHandler(IncorrectPasswordException.class)
-    public final ResponseEntity<ApiErrorResponse> handleIncorrectPasswordException(IncorrectPasswordException incorrectPasswordException) {
+    public final ResponseEntity<ApiErrorResponse> handleIncorrectPasswordException(IncorrectPasswordException incorrectPasswordException,WebRequest request) {
 
-        ApiErrorResponse apiErrorResponse = new ApiErrorResponse(incorrectPasswordException.getMessage(), HttpStatus.BAD_REQUEST,"error");
+        ApiErrorResponse apiErrorResponse = new ApiErrorResponse(incorrectPasswordException.getMessage(), HttpStatus.BAD_REQUEST,request.getDescription(false));
 
         return new ResponseEntity<>(apiErrorResponse, HttpStatus.BAD_REQUEST);
     }
