@@ -1,6 +1,6 @@
 package com.pentspace.accountmgtservice.endpoints;
 
-import com.pentspace.accountmgtservice.ApiSuccessResponse;
+import com.pentspace.accountmgtservice.response.ApiSuccessResponse;
 import com.pentspace.accountmgtservice.clients.PaystackServiceClient;
 import com.pentspace.accountmgtservice.dto.*;
 import com.pentspace.accountmgtservice.entities.Account;
@@ -32,41 +32,49 @@ public class AccountEndpoint {
     @Autowired
     private PaystackServiceClient paystackServiceClient;
 
-    @PostMapping("/signUp")
-    public ResponseEntity<?> signUp(@RequestBody @Valid UserSignUpRequestDto request) throws MessagingException, GeneralServiceException, AccountCreationException {
+        @PostMapping("/signUp")
+    public ResponseEntity<?> signUp(@RequestBody @Valid UserSignUpRequestDto userSignUpRequestDto) throws MessagingException, GeneralServiceException, AccountCreationException {
 
-        return new ResponseEntity<>(userServices.signUp(request),HttpStatus.OK);
+        UserSignUpResponseDto result = userServices.signUp(userSignUpRequestDto);
+
+        return  ApiSuccessResponse.generateResponse("Successfully created user",HttpStatus.OK,result);
+
     }
 
     @PostMapping(path = "/validate")
-    public ResponseEntity<?> validate(@RequestBody @Valid ValidateDto request) throws GeneralServiceException, MessagingException {
+    public ResponseEntity<Object> validate(@RequestBody @Valid ValidateDto request) throws MessagingException, GeneralServiceException {
 
-        return new ResponseEntity<>(userServices.validateAccount(request),HttpStatus.OK);
+        ValidateDto result = userServices.validateAccount(request);
+        return  ApiSuccessResponse.generateResponse("Successfully Validated",HttpStatus.OK,result);
 
     }
 
     @PostMapping(path = "/login")
-    public ResponseEntity<?> login(@RequestBody @Valid LoginDTO request) throws GeneralServiceException, IncorrectPasswordException {
+    public ResponseEntity<?> login(@RequestBody @Valid LoginDTO request) throws IncorrectPasswordException, GeneralServiceException {
 
-        return new ResponseEntity<>(userServices.login(request),HttpStatus.OK);
+        LoginResponseDto result = userServices.login(request);
+        return  ApiSuccessResponse.generateResponse("Successful Login",HttpStatus.OK,result);
     }
 
     @PostMapping(path = "/changePassword")
-    public ResponseEntity<?> changePassword(@RequestBody @Valid ChangePasswordDTO request,@RequestParam("authentication") String authentication) throws MessagingException, GeneralServiceException, AuthorizationException {
+    public ResponseEntity<Object> changePassword(@RequestBody @Valid ChangePasswordDTO request,@RequestParam("authentication") String authentication) throws AuthorizationException, MessagingException, GeneralServiceException {
 
-        return new ResponseEntity<>(userServices.changePassword(request,authentication),HttpStatus.OK);
+        ChangePasswordDTO result = userServices.changePassword(request,authentication);
+        return  ApiSuccessResponse.generateResponse("Password Successfully changed",HttpStatus.OK,result);
     }
 
     @PostMapping(path = "/forgotPassword")
-    public ResponseEntity<?> forgotPassword(@RequestBody @Valid ForgotPasswordDTO request) throws MessagingException, GeneralServiceException {
+    public ResponseEntity<Object> forgotPassword(@RequestBody @Valid ForgotPasswordDTO request) throws MessagingException, GeneralServiceException {
 
-        return new ResponseEntity<>(userServices.forgotPassword(request),HttpStatus.OK);
+        ForgotPasswordDTO result = userServices.forgotPassword(request);
+        return  ApiSuccessResponse.generateResponse("Token sent!Kindly validate and reset password",HttpStatus.OK,result);
     }
 
     @PostMapping(path = "/validateTokenAndPassword")
-    public ResponseEntity<?> retrievePassword(@RequestBody @Valid RetrieveForgotPasswordDTO request) throws MessagingException, GeneralServiceException {
+    public ResponseEntity<Object> retrievePassword(@RequestBody @Valid RetrieveForgotPasswordDTO request) throws MessagingException, GeneralServiceException {
+        RetrieveForgotPasswordDTO result = userServices.retrieveForgottenPassword(request);
+        return  ApiSuccessResponse.generateResponse("User account successfully retrieved",HttpStatus.OK,result);
 
-        return new ResponseEntity<>(userServices.retrieveForgottenPassword(request),HttpStatus.OK);
     }
 
 

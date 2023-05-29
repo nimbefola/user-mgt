@@ -54,7 +54,6 @@ public class UserServicesImpl implements UserServices {
 
         users.setValidationToken(confirmation);
 
-        log.info(confirmation.toString());
 
         emailService.sendRegistrationSuccessfulEmail(users, confirmation);
 

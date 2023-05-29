@@ -1,4 +1,4 @@
-package com.pentspace.accountmgtservice;
+package com.pentspace.accountmgtservice.response;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
