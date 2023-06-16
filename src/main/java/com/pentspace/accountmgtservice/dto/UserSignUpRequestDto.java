@@ -1,8 +1,9 @@
 package com.pentspace.accountmgtservice.dto;
 
-import com.pentspace.accountmgtservice.entities.enums.Roles;
+import com.pentspace.accountmgtservice.entities.enums.AccountType;
 import lombok.Data;
 
+import javax.persistence.Enumerated;
 import javax.validation.constraints.Email;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.Pattern;
@@ -30,5 +31,8 @@ public class UserSignUpRequestDto {
             message = "password must be min 4 and max 12 length containing atleast 1 uppercase, 1 lowercase, 1 special character and 1 digit ")
     @NotEmpty(message = "password can not be empty")
     private String password;
+
+    @Enumerated
+    private AccountType accountType;
 
 }

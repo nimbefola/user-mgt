@@ -1,6 +1,7 @@
 package com.pentspace.accountmgtservice.security.securityServices;
 
 import com.pentspace.accountmgtservice.dto.LoginDTO;
+import com.pentspace.accountmgtservice.dto.ValidateDto;
 import com.pentspace.accountmgtservice.entities.User;
 import com.pentspace.accountmgtservice.entities.repositories.UserRepository;
 import com.pentspace.accountmgtservice.exceptions.AuthorizationException;
@@ -49,11 +50,11 @@ public class UserPrincipalService implements UserDetailsService {
 
 
     public JWTToken loginUser(LoginDTO loginDTO) throws UsernameNotFoundException, IncorrectPasswordException, GeneralServiceException {
-        Optional<User> user = userRepository.findUserByEmail(loginDTO.getEmail());
+         Optional<User> user = userRepository.findUserByEmail(loginDTO.getEmail());
 
 
         if(user.isPresent()){
-            if(!user.get().getEnabled()){
+           if(!user.get().getEnabled()){
                 throw new GeneralServiceException("Account has not been enabled");
             }
             boolean matchingResult=passwordEncoder.matches(loginDTO.getPassword(), user.get().getPassword());
@@ -76,6 +77,25 @@ public class UserPrincipalService implements UserDetailsService {
         }
         throw new UsernameNotFoundException("User Not Found");
     }
+
+    public JWTToken signUpUser(ValidateDto validateDto) throws UsernameNotFoundException, IncorrectPasswordException, GeneralServiceException {
+        Optional<User> optionalUser = userRepository.findUserByEmail(validateDto.getEmail());
+
+
+            final Authentication authentication = authenticationManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(
+                            validateDto.getEmail(), validateDto.getToken()
+                    )
+            );
+
+            SecurityContextHolder.getContext().setAuthentication(authentication);
+
+
+            JWTToken jwtToken = new JWTToken(tokenProviderService.generateLoginToken(authentication, optionalUser.get()));
+
+            return jwtToken;
+        }
+
 
     public String signUpUser(User user) {
         StringBuilder stringBuilder= new StringBuilder("Validates ");

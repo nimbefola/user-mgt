@@ -1,18 +1,21 @@
 package com.pentspace.accountmgtservice.entities;
 
 
+import com.pentspace.accountmgtservice.entities.enums.AccountType;
 import com.pentspace.accountmgtservice.entities.enums.Roles;
 
 import javax.persistence.*;
-import javax.validation.constraints.Email;
-import javax.validation.constraints.Pattern;
+import java.util.Set;
+
+//A LOT NEEDED TO BE DONE BUT WE FOCUS ON THE SECURITY SURFACE FOR NOW
 
 @Entity
 @Table(name = "users")
-public class User {
+public class User  {
 
     @Id
     private String id;
+
     @Column
     private String firstName;
     @Column
@@ -26,6 +29,10 @@ public class User {
     private String country;
     @Enumerated
     private Roles roles;
+
+    @Enumerated
+    private AccountType accountType;
+
     @Column
     private Boolean locked = false;
     @Column
@@ -43,6 +50,16 @@ public class User {
         this.id = id;
     }
 
+
+
+    public AccountType getAccountType() {
+
+        return accountType;
+    }
+
+    public void setAccountType(AccountType accountType) {
+        this.accountType = accountType;
+    }
 
     public String getCountry() {
         return country;

@@ -11,6 +11,7 @@ create TABLE users(
     "phone_number" VARCHAR(255) NOT NULL,
     "country" VARCHAR(255) NOT NULL,
     "roles"  VARCHAR(255) NOT NULL,
+    "account_type" VARCHAR(255) NOT NULL,
     "locked" BOOLEAN,
     "enabled" BOOLEAN,
     "validation_token"  VARCHAR(255),
@@ -31,11 +32,13 @@ create TABLE account (
     "pin" VARCHAR(255) NOT NULL,
     "profile_picture_url" VARCHAR(255) NULL,
     "msisdn" VARCHAR(255) NOT NULL,
+    "activation_otp" VARCHAR(255) NOT NULL,
     "status" VARCHAR(255) NOT NULL,
     "account_type" VARCHAR(255) NOT NULL,
-    "service_description" VARCHAR(255) NULL,
+    "service_id" VARCHAR(255) NOT NULL,
     "address_id" VARCHAR(255) NOT NULL,
-    "bank_detail_id" VARCHAR(255) NOT NULL,
+    "bank_detail_id" VARCHAR(255) ,
+    "user_id" VARCHAR(255),
     "balance" VARCHAR(255) NOT NULL,
     primary key (id)
 );
@@ -69,13 +72,14 @@ create TABLE address (
 
 DROP TABLE IF EXISTS  service;
 create TABLE service (
-    "id" VARCHAR(255) NOT NULL,
-    "created" TIMESTAMP NOT NULL,
-    "updated" TIMESTAMP NOT NULL,
+    "id" VARCHAR(255) NULL,
+    "created" TIMESTAMP NULL,
+    "updated" TIMESTAMP NULL,
     "version" INT8 DEFAULT 0,
-    "title" VARCHAR(255) NOT NULL,
-    "description" VARCHAR(255) NOT NULL,
+    "title" VARCHAR(255) NULL,
+    "description" VARCHAR(255) NULL,
     "service_image_url" VARCHAR(255) NULL,
+    "user_id" VARCHAR(255)  NULL,
     primary key (id)
 );
 
@@ -84,6 +88,7 @@ create TABLE account_service (
     "account_id" VARCHAR(255) NOT NULL,
     "service_id" VARCHAR(255) NOT NULL
 );
+
 
 DROP TABLE IF EXISTS bank;
 CREATE TABLE bank (

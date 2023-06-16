@@ -5,26 +5,26 @@ import com.pentspace.accountmgtservice.clients.PaystackServiceClient;
 import com.pentspace.accountmgtservice.clients.TransactionServiceClient;
 import com.pentspace.accountmgtservice.dto.*;
 import com.pentspace.accountmgtservice.entities.*;
-import com.pentspace.accountmgtservice.entities.enums.AccountStatus;
-import com.pentspace.accountmgtservice.entities.enums.TransactionSource;
-import com.pentspace.accountmgtservice.entities.enums.TransactionStatus;
-import com.pentspace.accountmgtservice.entities.repositories.AccountRepository;
+import com.pentspace.accountmgtservice.entities.enums.*;
+import com.pentspace.accountmgtservice.entities.repositories.*;
 import com.pentspace.accountmgtservice.exceptions.AccountCreationException;
 import com.pentspace.accountmgtservice.exceptions.AuthorizationException;
+import com.pentspace.accountmgtservice.exceptions.GeneralServiceException;
 import com.pentspace.accountmgtservice.handlers.AccountHandler;
 import com.pentspace.accountmgtservice.handlers.BaseHandler;
 import com.pentspace.accountmgtservice.handlers.HashManagerHandler;
+import com.pentspace.accountmgtservice.serviceUtil.IdGenerator;
 import com.pentspace.accountmgtservice.services.AccountService;
 import com.pentspace.accountmgtservice.services.BankService;
 import com.pentspace.accountmgtservice.services.FileUploadService;
 import com.pentspace.accountmgtservice.services.ServiceService;
-import com.pentspace.accountmgtservice.entities.enums.TransactionType;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.math.BigDecimal;
+import java.time.Instant;
 import java.util.*;
 
 
@@ -52,12 +52,29 @@ public class AccountHandlerImpl extends BaseHandler implements AccountHandler {
 
     @Autowired
     private AccountRepository accountRepository;
+
+    @Autowired
+    private AddressRepository addressRepository;
+
+    @Autowired
+    private BankDetailRepository bankDetailRepository;
+
+    @Autowired
+    private ServiceRepository serviceRepository;
+
+    @Autowired
+    private BankRepository bankRepository;
+
+    @Autowired
+    private UserRepository userRepository;
+
+//,String authentication
     @Override
-    public Account createAccount(AccountDTO accountDTO,String authentication) throws AuthorizationException, AccountCreationException {
+    public Account createAccount(AccountDTO accountDTO,String userId) throws AuthorizationException, AccountCreationException, GeneralServiceException {
 
 
-        Account account = prepareAccountEntity(accountDTO);
-        account =  accountService.create(account,authentication);
+        Account account = prepareAccountEntity(accountDTO,userId);
+        account =  accountService.create(account); //authentication
 
 
 //        if(Objects.nonNull(account.getId())){
@@ -122,6 +139,7 @@ public class AccountHandlerImpl extends BaseHandler implements AccountHandler {
     public Account linkAccountWithService(String accountId,String serviceId,String authentication) throws AuthorizationException, AccountCreationException {
         Account account = getById(accountId);
         Service service = serviceService.getByID(serviceId);
+
         account.getServices().add(service);
         return accountService.updateAccount(accountId, account,authentication);
     }
@@ -243,43 +261,102 @@ public class AccountHandlerImpl extends BaseHandler implements AccountHandler {
         return accountService.updateAccounts(savedAccounts,authentication);
     }
 
-    private Account prepareAccountEntity(AccountDTO accountDTO){
-        BankDetail bankDetail = null;
-        if(Objects.nonNull(accountDTO.getBankDetail())){
-            bankDetail = BankDetail.build(
-                    accountDTO.getBankDetail().getAccountNumber(),
-                    accountDTO.getBankDetail().getCbnBankCode(),
-                    accountDTO.getBankDetail().getBankCode(),
-                    accountDTO.getBankDetail().getAccountNumber(),
-                    accountDTO.getBankDetail().getBankName()
-            );
+    private Account prepareAccountEntity(AccountDTO accountDTO,String userId) throws GeneralServiceException {
+//        BankDetail bankDetail = null;
+//        if(Objects.nonNull(accountDTO.getBankDetail())){
+//            bankDetail = new BankDetail();
+//                    accountDTO.getBankDetail().getAccountNumber(),
+//                    accountDTO.getBankDetail().getCbnBankCode(),
+//                    accountDTO.getBankDetail().getBankCode(),
+//                    accountDTO.getBankDetail().getAccountNumber(),
+//                    accountDTO.getBankDetail().getBankName();
+//        }
+        Optional <User> user = userRepository.findUserById(userId);
+
+
+
+        BankDetail bankDetail = new BankDetail();
+        //bankDetail.setId(accountDTO.getBankDetail().);
+        bankDetail.setAccountNumber(accountDTO.getBankDetail().getAccountNumber());
+        bankDetail.setBankCode(accountDTO.getBankDetail().getBankCode());
+        bankDetail.setAccountName(accountDTO.getBankDetail().getAccountName());
+        bankDetail.setCbnBankCode(accountDTO.getBankDetail().getCbnBankCode());
+        bankDetail.setBankName(accountDTO.getBankDetail().getBankName());
+
+        log.info(bankDetail.toString());
+        bankDetailRepository.save(bankDetail);
+
+
+        Address address = new Address();
+        //address.setId(address.getId());
+            address.setId(IdGenerator.generateId());
+            address.getId();
+            address.setLine1(accountDTO.getAddress().getLine1());
+            address.setLine2(accountDTO.getAddress().getLine2());
+            address.setState(accountDTO.getAddress().getState());
+            address.setCountry(accountDTO.getAddress().getCountry());
+
+            log.info(address.toString());
+          addressRepository.save(address);
+
+        if (!user.isPresent()){
+            throw new GeneralServiceException("NO USER RECORD FOUND");
         }
 
-        Address address = Address.build(
-                accountDTO.getAddress().getLine1(),
-                accountDTO.getAddress().getLine2(),
-                accountDTO.getAddress().getState(),
-                accountDTO.getAddress().getCountry()
-        );
+        User aUser = user.get();
+
+        Service service = new Service();
+
+          service.setId(IdGenerator.generateId());
+          service.setTitle(accountDTO.getService().getTitle());
+          service.setCreated(Date.from(Instant.now()));
+          service.setUpdated(Date.from(Instant.now()));
+          service.setDescription(accountDTO.getService().getDescription());
+          service.setServiceImageUrl(accountDTO.getService().getServiceImageUrl());
+          service.setUser(aUser);
+
+          log.info(service.toString());
+
+          serviceRepository.save(service);
+
+
 
         //String otp = generateOTP();
-        Account account = Account.build(
-                accountDTO.getName(),
-                accountDTO.getBusinessName(),
-                accountDTO.getEmail(),
-                accountDTO.getUsername(),
-            //    hashManagerHandler.hashData(accountDTO.getPassword()),
-                hashManagerHandler.hashData(accountDTO.getPin()),
-                null,
-                accountDTO.getMsisdn(),
-                null,
-                AccountStatus.ACTIVE,
-                accountDTO.getAccountType(),
-                bankDetail,
-                null,
-                address,
-                BigDecimal.ZERO
-        );
+        Account account = new Account();
+
+        account.setName(accountDTO.getName());
+        account.setBusinessName(accountDTO.getBusinessName());
+        account.setEmail(accountDTO.getEmail());
+        account.setUsername(accountDTO.getUsername());
+        account.setPin(hashManagerHandler.hashData(accountDTO.getPin()));
+        account.setProfilePictureUrl(accountDTO.getProfilePictureUrl());
+        account.setMsisdn(accountDTO.getMsisdn());
+        account.setActivationOtp(accountDTO.getActivationOtp());
+        account.setStatus(AccountStatus.ACTIVE);
+        account.setAccountType(accountDTO.getAccountType());
+        account.setBankDetail(bankDetail);
+        account.setUser(aUser);
+        account.setService(service);
+        account.setAddress(address);
+       // account.setBalance(account.getBalance());
+        account.setBalance(BigDecimal.ZERO);
+
+        log.info(account.toString());
+//                accountDTO.getName(),
+//                accountDTO.getBusinessName(),
+//                accountDTO.getEmail(),
+//                accountDTO.getUsername(),
+//            //    hashManagerHandler.hashData(accountDTO.getPassword()),
+//                hashManagerHandler.hashData(accountDTO.getPin()),
+//                null,
+//                accountDTO.getMsisdn(),
+//                null,
+//                AccountStatus.ACTIVE,
+//                accountDTO.getAccountType(),
+//                bankDetail,
+//                null,
+//                address,
+//                BigDecimal.ZERO;
         return account;
     }
 

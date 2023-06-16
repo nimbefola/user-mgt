@@ -70,6 +70,14 @@ public class ApplicationExceptionHandler {
         return errorMap;
     }
 
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    @ExceptionHandler(EnumConstantNotPresentException.class)
+    public Map<String, String> handleDuplicateConstrain(EnumConstantNotPresentException exception){
+        Map<String, String> errorMap = new HashMap<>();
+        errorMap.put("error", exception.getMessage());
+        return errorMap;
+    }
+
 
     @ExceptionHandler(MessagingException.class)
     public final ResponseEntity<ApiErrorResponse> handleMessagingExceptions(MessagingException messagingException) {

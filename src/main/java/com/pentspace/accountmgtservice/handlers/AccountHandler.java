@@ -5,13 +5,15 @@ import com.pentspace.accountmgtservice.entities.Account;
 import com.pentspace.accountmgtservice.entities.enums.AccountStatus;
 import com.pentspace.accountmgtservice.exceptions.AccountCreationException;
 import com.pentspace.accountmgtservice.exceptions.AuthorizationException;
+import com.pentspace.accountmgtservice.exceptions.GeneralServiceException;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
 public interface AccountHandler {
 
-    Account createAccount(AccountDTO accountDTO,String authentication) throws AuthorizationException, AccountCreationException;
+  //,String authentication
+    Account createAccount(AccountDTO accountDTO,String userId) throws AuthorizationException, AccountCreationException, GeneralServiceException;
     Account getById(String id);
   //  Account authenticateAccount(String username, String password);
     //    Account activate(String id, String OTP);

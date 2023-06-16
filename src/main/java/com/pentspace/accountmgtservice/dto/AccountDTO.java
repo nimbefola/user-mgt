@@ -30,11 +30,13 @@ public class AccountDTO {
     private String profilePictureUrl;
     @Pattern(regexp = "^\\d{11}$", message = "MSISDN should be 11 digits numbers only")
     private String msisdn;
+
+    private String activationOtp;
     private AccountType accountType;
-    private Service service;
-    @NotNull
-    private Address address;
+    private ServiceDTO service;
+
+    private AddressDTO address;
     @Valid
-    private BankDetail bankDetail;
+    private BankDetailsDTO bankDetail;
     private BigDecimal balance;
 }

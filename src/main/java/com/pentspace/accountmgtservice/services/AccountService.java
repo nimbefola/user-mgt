@@ -10,7 +10,8 @@ import java.util.List;
 
 public interface AccountService {
 
-    Account create(Account account,String authentication) throws AuthorizationException, AccountCreationException;
+    //,String authentication
+    Account create(Account account) throws AuthorizationException, AccountCreationException;
     //    Account getByUsernameAndPassword(String username, String password);
     Account getByUsername(String username,String authentication) throws AuthorizationException, AccountCreationException;
    // Account activate(String id, String OTP);

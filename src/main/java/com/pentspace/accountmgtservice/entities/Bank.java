@@ -1,11 +1,13 @@
 package com.pentspace.accountmgtservice.entities;
 
-
-import javax.persistence.Column;
-import javax.persistence.Entity;
+import javax.persistence.*;
 
 @Entity
-public class Bank extends Base {
+public class Bank extends Base{
+//    @Id
+//    @GeneratedValue(strategy = GenerationType.SEQUENCE)
+//    @Column(name = "id", nullable = false)
+//    private Long id;
 
     @Column
     private String cbnBankCode;
@@ -15,6 +17,20 @@ public class Bank extends Base {
 
     @Column
     private String bankName;
+
+
+    @ManyToOne
+    @JoinColumn(name = "account_id")
+    private Account account;
+
+    public Account getAccount() {
+        return account;
+    }
+
+    public void setAccount(Account account) {
+        this.account = account;
+    }
+
 
     public String getCbnBankCode() {
         return cbnBankCode;

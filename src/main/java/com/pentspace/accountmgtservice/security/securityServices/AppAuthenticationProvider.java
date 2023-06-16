@@ -42,13 +42,11 @@ public class AppAuthenticationProvider implements AuthenticationManager {
         String password = (String) token.getCredentials();
 
 
-
         Optional<User> user = userRepository.findUserByEmail(name);
 
         if (!user.isPresent()) {
-            throw new BadCredentialsException("There is not account with given credentials");
+            throw new BadCredentialsException("This account is without with given credentials. Re-confirm the mail");
         }
-
 
         //UsersEntity usersEntity=user.get();
         User userEntity = user.get();

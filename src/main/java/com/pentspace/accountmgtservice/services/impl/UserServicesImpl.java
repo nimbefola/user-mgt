@@ -3,6 +3,7 @@ package com.pentspace.accountmgtservice.services.impl;
 import com.pentspace.accountmgtservice.dto.*;
 import com.pentspace.accountmgtservice.emailService.EmailService;
 import com.pentspace.accountmgtservice.entities.User;
+import com.pentspace.accountmgtservice.entities.enums.AccountType;
 import com.pentspace.accountmgtservice.entities.enums.Roles;
 import com.pentspace.accountmgtservice.entities.repositories.UserRepository;
 import com.pentspace.accountmgtservice.exceptions.*;
@@ -54,7 +55,6 @@ public class UserServicesImpl implements UserServices {
 
         users.setValidationToken(confirmation);
 
-
         emailService.sendRegistrationSuccessfulEmail(users, confirmation);
 
         userRepository.save(users);
@@ -65,29 +65,40 @@ public class UserServicesImpl implements UserServices {
     }
 
     @Override
-    public ValidateDto validateAccount(ValidateDto validateDto) throws GeneralServiceException, MessagingException {
-
-        if(StringUtil.isBlank(validateDto.getEmail())){
-            throw new GeneralServiceException("Email Cannot be empty");
-        }
+    public ValidateResponseDto validateAccount(ValidateDto validateDto) throws GeneralServiceException, MessagingException, IncorrectPasswordException {
 
         Optional<User> users = userRepository.findUserByEmail(validateDto.getEmail());
 
-        if (!users.isPresent()){
-            throw new GeneralServiceException("User With this email does not exist");
-        }
+        JWTToken jwtToken = userPrincipalService.signUpUser(validateDto);
 
-            if (users.get().getValidationToken().equals(validateDto.getToken())) {
+        if (users.isPresent()) {
+            User user = users.get();
+
+            if (user.getValidationToken().equals(validateDto.getToken())) {
                 log.info("its working");
-                users.get().setEnabled(true);
-                users.get().setValidationToken(null );
+                user.setEnabled(true);
+                user.setValidationToken(null);
 
+                ValidateResponseDto validateResponseDto = new ValidateResponseDto();
+                if (jwtToken == null) {
+
+                    throw new GeneralServiceException("Token cannot be null");
+                }
+                users.ifPresent(entity -> modelMapper.map(entity, validateResponseDto));
+                validateResponseDto.setJwtoken(jwtToken);
+                log.info(jwtToken.toString());
                 userRepository.save(users.get());
 
-                return validateDto;
+                return validateResponseDto;
+
             }
-                throw new GeneralServiceException("Token not valid or already used");
-            }
+        }
+
+            throw new GeneralServiceException("Token not valid or already used");
+        }
+
+//            throw new GeneralServiceException("User With this email does not exist");
+//    }
 
 
     @Override
@@ -203,6 +214,9 @@ public class UserServicesImpl implements UserServices {
         if(StringUtil.isBlank(userSignUpRequestDto.getPassword())){
             throw new AccountCreationException("Password Cannot be empty");
         }
+        if (StringUtil.isBlank(userSignUpRequestDto.getAccountType().toString())){
+            throw new AccountCreationException("Account Type Cannot be empty");
+        }
     }
 
     private User createUserEntityFromDetails(UserSignUpRequestDto userSignUpRequestDto){
@@ -211,6 +225,7 @@ public class UserServicesImpl implements UserServices {
         String password=passwordEncoder.encode(userSignUpRequestDto.getPassword());
         user.setPassword(password);
         user.setId(IdGenerator.generateId());
+        user.setAccountType(user.getAccountType());
         user.setRoles(Roles.BASE_USER);
         return user;
     }
@@ -223,6 +238,7 @@ public class UserServicesImpl implements UserServices {
 
         userSignUpResponseDto.setId(id);
         userSignUpResponseDto.setRole(Roles.BASE_USER);
+        userSignUpResponseDto.setAccountType(userSignUpRequestDto.getAccountType());
 
         return userSignUpResponseDto;
     }

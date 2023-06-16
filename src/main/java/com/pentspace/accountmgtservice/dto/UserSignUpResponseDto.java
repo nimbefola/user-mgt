@@ -1,5 +1,6 @@
 package com.pentspace.accountmgtservice.dto;
 
+import com.pentspace.accountmgtservice.entities.enums.AccountType;
 import com.pentspace.accountmgtservice.entities.enums.Roles;
 import lombok.Data;
 
@@ -19,4 +20,6 @@ public class UserSignUpResponseDto {
     private String email;
 
     private Roles role;
+
+    private AccountType accountType;
 }

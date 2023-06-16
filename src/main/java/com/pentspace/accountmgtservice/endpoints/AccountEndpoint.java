@@ -42,9 +42,9 @@ public class AccountEndpoint {
     }
 
     @PostMapping(path = "/validate")
-    public ResponseEntity<Object> validate(@RequestBody @Valid ValidateDto request) throws MessagingException, GeneralServiceException {
+    public ResponseEntity<Object> validate(@RequestBody @Valid ValidateDto request) throws MessagingException, GeneralServiceException, IncorrectPasswordException {
 
-        ValidateDto result = userServices.validateAccount(request);
+        ValidateResponseDto result = userServices.validateAccount(request);
         return  ApiSuccessResponse.generateResponse("Successfully Validated",HttpStatus.OK,result);
 
     }
@@ -77,11 +77,12 @@ public class AccountEndpoint {
 
     }
 
+    //,String authentication
 
-    @PostMapping(produces = "application/json", consumes = "application/json")
-    public ResponseEntity<?> create(@RequestBody @Valid AccountDTO request,String authentication) throws MessagingException, GeneralServiceException, AuthorizationException, AccountCreationException {
+    @PostMapping(path = "/create", produces = "application/json", consumes = "application/json")
+    public ResponseEntity<?> create(@RequestBody @Valid AccountDTO request,@RequestParam String userId) throws MessagingException, GeneralServiceException, AuthorizationException, AccountCreationException {
 
-        return new ResponseEntity<>(accountHandler.createAccount(request,authentication),  HttpStatus.OK);
+        return new ResponseEntity<>(accountHandler.createAccount(request,userId),  HttpStatus.OK);
 
     }
 
@@ -90,7 +91,6 @@ public class AccountEndpoint {
     public ResponseEntity<?> getById(@PathVariable("id") String id) {
 
             return new ResponseEntity<>(accountHandler.getById(id), HttpStatus.OK);
-
     }
 
 
@@ -106,23 +106,16 @@ public class AccountEndpoint {
         return new ResponseEntity<>(accountHandler.updateAccountStatus(id, AccountStatus.valueOf(status), authentication), HttpStatus.OK);
 
     }
-
-
     @PostMapping(path = "profile/picture/upload/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> uploadProfilePicture(@PathVariable("id") String id, @RequestParam("file") MultipartFile file,@RequestParam("authentication") String authentication) throws AuthorizationException, AccountCreationException {
 
         return new ResponseEntity<>(accountHandler.uploadProfilePicture(id, file,authentication),HttpStatus.OK);
-
     }
-
     @PostMapping(path = "service/link", consumes = "application/json", produces = "application/json")
     public ResponseEntity<?> linkAccountToService(@RequestBody @Valid AccountServiceLinkDTO accountServiceLinkDTO,@RequestParam("authentication") String authentication) throws AuthorizationException, AccountCreationException {
 
         return new ResponseEntity<>(accountHandler.linkAccountWithService(accountServiceLinkDTO.getAccountId(), accountServiceLinkDTO.getServiceId(),authentication), HttpStatus.OK);
-
     }
-
-
     @GetMapping(path = "enquiry/{msisdn}", produces = "application/json")
     public ResponseEntity<?> getAccountByMsisdn(@PathVariable("msisdn") String msisdn,@RequestParam("authentication") String authentication) throws AuthorizationException, AccountCreationException {
 
@@ -136,15 +129,12 @@ public class AccountEndpoint {
         return new ResponseEntity<>(accountHandler.transfer(transferDTO,authentication), HttpStatus.OK); //,authentication
 
     }
-
-
     @PostMapping(path = "/withdraw", consumes = "application/json", produces = "application/json")
     public ResponseEntity<?> withdraw(@RequestBody WithdrawDTO withdrawDTO,@RequestParam("authentication") String authentication){
 
         return new ResponseEntity<>(accountHandler.withdraw(withdrawDTO,authentication), HttpStatus.OK);
 
     }
-
     @PutMapping(path = "/payment/{beneficiaryId}/{externalTransactionId}", produces = "application/json")
     public ResponseEntity<String> payment(@PathVariable("beneficiaryId") String beneficiaryId, @PathVariable("externalTransactionId") String externalTransactionId,@RequestParam("authentication") String authentication){
 

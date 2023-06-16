@@ -24,8 +24,6 @@ import java.util.Map;
 @NoArgsConstructor
 public class ApplicationUser implements UserDetails {
 
-    private String id;
-
     private String firstName;
 
     private String lastName;
@@ -50,7 +48,7 @@ public class ApplicationUser implements UserDetails {
         List<GrantedAuthority> authorities = new ArrayList<>();
         authorities.add(new SimpleGrantedAuthority(user.getRoles().toString())); //user entity does not have role. create one
         return new ApplicationUser(
-                String.valueOf(user.getId()),
+              //  String.valueOf(user.getId()),
                 user.getFirstName(),
                 user.getLastName(),
                 user.getEmail(),
@@ -60,8 +58,7 @@ public class ApplicationUser implements UserDetails {
         );
     }
 
-    public ApplicationUser(String id, String firstName, String lastName,  String email, String phoneNumber, String password, Collection<? extends GrantedAuthority> authorities) {
-        this.id = id;
+    public ApplicationUser( String firstName, String lastName,  String email, String phoneNumber, String password, Collection<? extends GrantedAuthority> authorities) {
         this.firstName = firstName;
         this.lastName = lastName;
         this.email = email;

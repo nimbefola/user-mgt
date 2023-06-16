@@ -3,14 +3,17 @@ package com.pentspace.accountmgtservice.entities;
 import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
 
-import javax.persistence.Entity;
+import javax.persistence.*;
 import javax.validation.constraints.Pattern;
 import javax.validation.constraints.Size;
 
 @Entity
-@AllArgsConstructor(staticName = "build")
-@NoArgsConstructor
 public class BankDetail extends Base{
+//    @Id
+//    @GeneratedValue(strategy = GenerationType.SEQUENCE)
+//    @Column(name = "id", nullable = false)
+//    private Long id;
+
     @Size(min = 10, max = 10, message = "Account number must be 10 digits")
     @Pattern(regexp = "^\\d{10}$", message = "Account number must be 10 digits")
     private String accountNumber;
@@ -18,6 +21,8 @@ public class BankDetail extends Base{
     private String bankCode;
     private String accountName;
     private String bankName;
+
+
 
     public String getAccountNumber() {
         return accountNumber;

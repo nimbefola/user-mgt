@@ -8,6 +8,7 @@ import com.pentspace.accountmgtservice.entities.repositories.UserRepository;
 import com.pentspace.accountmgtservice.exceptions.AccountCreationException;
 import com.pentspace.accountmgtservice.exceptions.AuthorizationException;
 import com.pentspace.accountmgtservice.security.securityServices.UserPrincipalService;
+import com.pentspace.accountmgtservice.serviceUtil.IdGenerator;
 import com.pentspace.accountmgtservice.services.AccountService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,17 +32,19 @@ public class AccountServiceImpl implements AccountService {
     private UserRepository userRepository;
 
 
-
+//,String authentication
 
     @Override
-    public Account create(Account account,String authentication) throws AuthorizationException, AccountCreationException {
+    public Account create(Account account) throws AuthorizationException, AccountCreationException {
 
-        String userEmail = userPrincipalService.getUserEmailAddressFromToken(authentication);
+//        String userEmail = userPrincipalService.getUserEmailAddressFromToken(authentication);
+//
+//        Optional<User> user = userRepository.findUserByEmail(userEmail);
+//        if (!user.isPresent()) {
+//            throw new AccountCreationException("User not registered");
+//        }
 
-        Optional<User> user = userRepository.findUserByEmail(userEmail);
-        if (!user.isPresent()) {
-            throw new AccountCreationException("User not registered");
-        }
+       // account.setId(IdGenerator.generateId());
 
         return accountRepository.save(account);
     }

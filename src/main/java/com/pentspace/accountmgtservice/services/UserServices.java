@@ -10,7 +10,7 @@ public interface UserServices {
 
    UserSignUpResponseDto signUp(UserSignUpRequestDto userSignUpRequestDto) throws MessagingException, GeneralServiceException, AccountCreationException;
 
-    ValidateDto validateAccount(ValidateDto validateDto) throws GeneralServiceException, MessagingException;
+    ValidateResponseDto validateAccount(ValidateDto validateDto) throws GeneralServiceException, MessagingException, IncorrectPasswordException;
 
     LoginResponseDto login(LoginDTO loginDTO) throws GeneralServiceException, IncorrectPasswordException;
 

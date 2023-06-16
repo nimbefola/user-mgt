@@ -2,18 +2,15 @@ package com.pentspace.accountmgtservice.entities;
 
 import com.pentspace.accountmgtservice.entities.enums.AccountStatus;
 import com.pentspace.accountmgtservice.entities.enums.AccountType;
-import lombok.AllArgsConstructor;
-import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
 import javax.validation.constraints.Email;
 import java.math.BigDecimal;
+import java.util.Date;
 import java.util.Set;
 
-
+//The account is like the profile
 @Entity
-@AllArgsConstructor(staticName = "build")
-@NoArgsConstructor
 public class Account extends Base{
 
     private String name;
@@ -26,21 +23,85 @@ public class Account extends Base{
     private String pin;
     private String profilePictureUrl;
     private String msisdn;
+
+    @Column(name = "activation_otp")
     private String activationOtp;
+
     @Enumerated(EnumType.STRING)
     private AccountStatus status;
     @Enumerated(EnumType.STRING)
     private AccountType accountType;
     @OneToOne( cascade = CascadeType.ALL)
     private BankDetail bankDetail;
+
     @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(name = "account_service",
             joinColumns = @JoinColumn(name = "account_id", referencedColumnName = "id"),
             inverseJoinColumns = @JoinColumn(name = "service_id", referencedColumnName = "id"))
     private Set<Service> services;
-    @OneToOne( cascade = CascadeType.ALL)
+
+    @ManyToOne
+    @JoinColumn(name = "user_id")
+    private User user;
+
+
+    @ManyToOne
+    @JoinColumn(name = "service_id",nullable = true)
+    private Service service;
+    @ManyToOne
+    @JoinColumn(name = "address_id")
     private Address address;
+
     private BigDecimal balance;
+
+    public User getUser() {
+        return user;
+    }
+
+    public void setUser(User user) {
+        this.user = user;
+    }
+
+    public Service getService() {
+        return service;
+    }
+
+    public void setService(Service service) {
+        this.service = service;
+    }
+
+    public String getId() {
+        return id;
+    }
+
+    public void setId(String id) {
+        this.id = id;
+    }
+
+
+    public Set<Service> getServices() {
+        return services;
+    }
+
+    public void setServices(Set<Service> services) {
+        this.services = services;
+    }
+
+    public Date getCreated() {
+        return created;
+    }
+
+    public void setCreated(Date created) {
+        this.created = created;
+    }
+
+    public Date getUpdated() {
+        return updated;
+    }
+
+    public void setUpdated(Date updated) {
+        this.updated = updated;
+    }
 
     public String getName() {
         return name;
@@ -98,13 +159,13 @@ public class Account extends Base{
         this.msisdn = msisdn;
     }
 
-    public String getActivationOtp() {
-        return activationOtp;
-    }
-
-    public void setActivationOtp(String activationOtp) {
-        this.activationOtp = activationOtp;
-    }
+//    public String getActivationOtp() {
+//        return activationOtp;
+//    }
+//
+//    public void setActivationOtp(String activationOtp) {
+//        this.activationOtp = activationOtp;
+//    }
 
     public AccountStatus getStatus() {
         return status;
@@ -122,12 +183,12 @@ public class Account extends Base{
         this.accountType = accountType;
     }
 
-    public Set<Service> getServices() {
-        return services;
+    public String getActivationOtp() {
+        return activationOtp;
     }
 
-    public void setServices(Set<Service> services) {
-        this.services = services;
+    public void setActivationOtp(String activationOtp) {
+        this.activationOtp = activationOtp;
     }
 
     public Address getAddress() {
@@ -153,5 +214,8 @@ public class Account extends Base{
     public void setBankDetail(BankDetail bankDetail) {
         this.bankDetail = bankDetail;
     }
+
+
+
 
 }
