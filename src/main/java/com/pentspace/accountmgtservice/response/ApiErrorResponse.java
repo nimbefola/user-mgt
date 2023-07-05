@@ -13,24 +13,10 @@ public class ApiErrorResponse {
 
     private String message;
 
-    private HttpStatus status;
-    private List<String> errors;
+    private int status;
 
-    public ApiErrorResponse(String message, HttpStatus status, List<String> errors) {
-        super();
-        this.message = message;
-        this.status = status;
-        this.errors = errors;
-    }
 
-    public ApiErrorResponse(String message, HttpStatus status, String error) {
-        super();
-        this.status = status;
-        this.message = message;
-        errors = Arrays.asList(error);
-    }
-
-    public ApiErrorResponse(String message, HttpStatus status) {
+    public ApiErrorResponse(String message, int status) {
         super();
         this.status = status;
         this.message = message;

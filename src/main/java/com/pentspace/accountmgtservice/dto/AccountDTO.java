@@ -25,7 +25,6 @@ public class AccountDTO {
     private String username;
     @NotBlank
 
-    @NotBlank
     private String pin;
     private String profilePictureUrl;
     @Pattern(regexp = "^\\d{11}$", message = "MSISDN should be 11 digits numbers only")
@@ -36,7 +35,8 @@ public class AccountDTO {
     private ServiceDTO service;
 
     private AddressDTO address;
-    @Valid
+   // @Valid
     private BankDetailsDTO bankDetail;
+
     private BigDecimal balance;
 }

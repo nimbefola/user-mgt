@@ -49,6 +49,8 @@ public class UserServicesImpl implements UserServices {
 
         userWithEmailExists(userSignUpRequestDto);
 
+        checkAccountType(userSignUpRequestDto);
+
         User users = createUserEntityFromDetails(userSignUpRequestDto);
 
         String confirmation = userPrincipalService.sendRegistrationToken(users);
@@ -134,7 +136,6 @@ public class UserServicesImpl implements UserServices {
 
         boolean matches = userPrincipalService.passwordMatches(
                 changePasswordDTO.getOldPassword(), user.get().getPassword());
-
 
         if (!matches) {
             throw new GeneralServiceException("Old password is incorrect");
@@ -249,6 +250,18 @@ public class UserServicesImpl implements UserServices {
             throw new GeneralServiceException("Users with this email already exists");
         }
 
+    }
+
+    private void checkAccountType(UserSignUpRequestDto userSignUpRequestDto) throws GeneralServiceException {
+
+
+        if (userSignUpRequestDto.getAccountType().equals(AccountType.USER) ){
+            throw new GeneralServiceException("ONLY SERVICE PROVIDER CAN CREATE BUSINESS SERVICE");
+        }
+
+        if (userSignUpRequestDto.getAccountType() == null){
+            throw new GeneralServiceException("Account Type cannot be null. It must be either USER or SERVICE_PROVIDER");
+        }
     }
 
 }

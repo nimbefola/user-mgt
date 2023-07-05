@@ -15,7 +15,7 @@ public class Account extends Base{
 
     private String name;
     private String businessName;
-    @Email(message = "Please provide a valid Email")
+   // @Email(message = "Please provide a valid Email")
     @Column(unique = true)
     private String email;
     private String username;

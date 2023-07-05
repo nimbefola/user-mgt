@@ -40,8 +40,12 @@ public class ServiceImpl implements ServiceService {
 
        User aUser = user.get();
 
-       if (aUser.getAccountType().equals(AccountType.USER)){
+       if (aUser.getAccountType().equals(AccountType.USER) ){
            throw new GeneralServiceException("ONLY SERVICE PROVIDER CAN CREATE BUSINESS SERVICE");
+       }
+
+       if (aUser.getAccountType() == null){
+           throw new GeneralServiceException("Account Type cannot be null. It must be either USER or SERVICE_PROVIDER");
        }
 
         Service service = new Service();
